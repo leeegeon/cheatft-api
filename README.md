@@ -357,31 +357,78 @@
     "userInfo": {
       "nickname": "사용자 님",
       "level": 4,
+      "userTitle": "신뢰 탐색자",
       "joinDate": "2024-04-12"
     },
-    "monthlySummary": {
-      "searchCount": 58,
-      "checkedArticles": 42,
-      "reportsCreated": 19,
-      "averageReliability": 3.2
+    "myContribution": {
+      "opinionShareCount": 23,
+      "editRequestCount": 7,
+      "knowledgeCommunityAnswerCount": 15,
+      "totalLikesReceived": 128
     },
-    "biasAnalysis": {
-      "positiveRatio": 71,
-      "neutralRatio": 14,
-      "negativeRatio": 0,
-      "warning": "현재 긍정적인 정보가 다소 많습니다."
+    "streakReward": {
+      "currentStreakDays": 7,
+      "targetStreakDays": 14,
+      "rewardMessage": "14일 연속 시 뱃지 지급!"
     },
-    "badges": [
-      "신뢰 탐색자", "팩트체크 마스터", "소통 전문가"
+    "personalDashboard": {
+      "totalSearch": { "count": 58, "changeRate": 16, "direction": "up" },
+      "checkedArticles": { "count": 42, "changeRate": 22, "direction": "up" },
+      "factCheckReports": { "count": 19, "changeRate": 19, "direction": "up" },
+      "communityActivities": { "count": 31, "changeRate": 8, "direction": "up" },
+      "averageReliabilityScore": { "score": 3.2, "changeRate": 0.4, "direction": "up" }
+    },
+    "infoConsumptionBias": {
+      "biasDistribution": {
+        "positiveRatio": 71,
+        "neutralRatio": 14,
+        "negativeRatio": 0
+      },
+      "alertMessage": "현재 긍정적인 정보가 다소 많습니다. 다양한 관점의 정보를 확인해보세요.",
+      "categoryBiasDistribution": [
+        { "category": "정치", "positive": 8, "neutral": 2, "negative": 0 },
+        { "category": "경제", "positive": 6, "neutral": 1, "negative": 0 },
+        { "category": "사회", "positive": 5, "neutral": 1, "negative": 0 },
+        { "category": "과학/기술", "positive": 4, "neutral": 0, "negative": 0 },
+        { "category": "국제", "positive": 3, "neutral": 3, "negative": 0 }
+      ]
+    },
+    "reliabilityDistribution": {
+      "trustworthy4_5": { "count": 18, "ratio": 42 },
+      "reliable3": { "count": 15, "ratio": 36 },
+      "normal2": { "count": 7, "ratio": 17 },
+      "caution1": { "count": 2, "ratio": 5 },
+      "untrustworthy0": { "count": 0, "ratio": 0 }
+    },
+    "interestTopicsTop5": [
+      { "rank": 1, "category": "정치", "searchCount": 25, "ratio": 43 },
+      { "rank": 2, "category": "경제", "searchCount": 18, "ratio": 31 },
+      { "rank": 3, "category": "사회", "searchCount": 12, "ratio": 21 },
+      { "rank": 4, "category": "과학/기술", "searchCount": 7, "ratio": 12 },
+      { "rank": 5, "category": "국제", "searchCount": 5, "ratio": 9 }
+    ],
+    "earnedBadges": [
+      { "name": "신뢰 탐색자", "level": "Lv. 4", "condition": "" },
+      { "name": "팩트 체크 마스터", "level": null, "condition": "10회 검증" },
+      { "name": "소통 전문가", "level": null, "condition": "20회 참여" },
+      { "name": "지식 공유자", "level": null, "condition": "15회 기여" }
     ],
     "recentActivities": [
-      {
-        "type": "check",
-        "title": "백신 부작용 사망자 급증?",
-        "date": "2024-05-20",
-        "score": 3.1
-      }
-    ]
+      { "title": "백신 부작용 사망자 급증?", "date": "2024.05.20", "score": 3.1 },
+      { "title": "기후변화는 인간의 영향이 아니다?", "date": "2024.05.18", "score": 2.6 },
+      { "title": "AI가 일자리를 대체한다?", "date": "2024.05.15", "score": 3.4 },
+      { "title": "일본 후쿠시마 오염수 방류 안전하다?", "date": "2024.05.12", "score": 2.9 },
+      { "title": "우크라이나 전쟁, 미국의 개입이 원인?", "date": "2024.05.10", "score": 3.0 }
+    ],
+    "monthlySummary": {
+      "yearMonth": "2024.05",
+      "searchCount": { "count": 22, "changeRate": 10, "direction": "up" },
+      "checkedArticles": { "count": 16, "changeRate": 14, "direction": "up" },
+      "communityActivities": { "count": 9, "changeRate": 13, "direction": "up" },
+      "averageReliabilityScore": { "score": 3.2, "changeRate": 0.3, "direction": "up" }
+    }
   }
 }
+}
 ```
+아마 badges 부분에 대해서는 사전에 badge 목록을 만들어 두고 index만 반환하는 형식이 올바를 것 같습니다.
