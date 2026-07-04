@@ -42,7 +42,6 @@
     ],
     "biasStatus": {
       "overallScore": 32,
-      "overallLevel": "보통",
       "categories": [
         { "name": "정치", "score": 28, "level": "보통" },
         { "name": "사회", "score": 45, "level": "다소 높음" }
