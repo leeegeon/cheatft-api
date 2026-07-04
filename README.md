@@ -159,6 +159,8 @@
 }
 ```
 
+언론사 넘버는 https://news.naver.com/main/officeList.naver에 나와있는 순서대로 처음부터 0번입니다.
+
 ---
 
 ## 4. 알고리즘 분석 (Algorithm Analysis)
