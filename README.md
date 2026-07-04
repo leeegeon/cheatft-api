@@ -129,8 +129,6 @@
   | Name | Type | In | Required | Description |
   | :--- | :--- | :--- | :--- | :--- |
   | `id` | Number | Path | O | 검증 ID |
-  | `source` | String | Query | X | 출처 필터 (예: "all", "official") |
-  | `sort` | String | Query | X | 정렬 방식 (예: "latest") |
   | `page` | Number | Query | X | 페이지 번호 (기본값: 1) |
   | `limit` | Number | Query | X | 페이지당 항목 수 (기본값: 10) |
 
