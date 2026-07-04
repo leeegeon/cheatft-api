@@ -145,13 +145,8 @@
     "articles": [
       {
         "articleId": 1001,
-        "press": "KBS 뉴스",
+        "press": 1,
         "title": "질병청 \"백신 접종 후 사망 사례, 인과성 확인 안돼\"",
-        "date": "2024-05-20",
-        "reliability": {
-          "score": 5,
-          "grade": "신용 가능"
-        },
         "url": "https://..."
       }
     ],
