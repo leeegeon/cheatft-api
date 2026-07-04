@@ -192,9 +192,7 @@
   | Name | Type | In | Required | Description |
   | :--- | :--- | :--- | :--- | :--- |
   | `id` | Number | Path | O | 분석 ID |
-  | `sort` | String | Query | X | 기사 정렬 방식 |
-  | `page` | Number | Query | X | 페이지 번호 (기본값: 1) |
-  | `limit` | Number | Query | X | 페이지당 항목 수 (기본값: 10) |
+  | `limit` | Number | Query | X | 최대 항목 수 (기본값: 4) |
 
 * **Response:**
 ```json
@@ -217,7 +215,7 @@
     "relatedArticles": [
       {
         "articleId": 201,
-        "press": "연합뉴스",
+        "press": 4,
         "title": "전문가 \"백신과 사망 간 연관성 매우 낮아\"",
         "stance": "긍정"
       }
@@ -225,7 +223,7 @@
     "counterArticles": [
       {
         "articleId": 301,
-        "press": "서울경제",
+        "press": 8,
         "title": "\"백신 부작용 사망 급증\" 주장은 사실과 달라",
         "stance": "반박"
       }
@@ -235,7 +233,7 @@
       "pressCount": 15,
       "averageReliability": 3.2
     },
-    "pagination": { "currentPage": 1, "totalPages": 2, "totalItems": 21 }
+    "limit": 4
   }
 }
 ```
@@ -251,9 +249,8 @@
   | Name | Type | In | Required | Description |
   | :--- | :--- | :--- | :--- | :--- |
   | `keyword` | String | Query | X | 주제 검색어 |
-  | `date` | String | Query | X | 날짜 필터 (예: "last7days") |
+  | `date` | Number | Query | X | 날짜 필터 (단위: 일, 예: `1` = 1일) |
   | `score` | Number | Query | X | 평균 신뢰도 이상 필터 |
-  | `sort` | String | Query | X | 정렬 (예: "latest") |
   | `page` | Number | Query | X | 페이지 번호 (기본값: 1) |
   | `limit` | Number | Query | X | 페이지당 항목 수 (기본값: 10) |
 
@@ -272,11 +269,12 @@
       {
         "id": 501,
         "topic": "기후변화는 인간의 영향이 아니다?",
+        "searchTime": "2024-05-20T14:30:00Z",
         "status": "분석 완료",
         "relatedCount": 15,
         "counterCount": 11,
         "averageReliability": 2.6,
-        "mainPresses": ["BBC 코리아", "사이언스타임즈", "자유일보"],
+        "mainPresses": [7, 4, 2],
         "summary": "다수의 과학적 연구는 최근 기후변화의 주요 원인이 인간 활동에 의한 것임을 지지하고 있습니다."
       }
     ],
@@ -297,7 +295,6 @@
   | :--- | :--- | :--- | :--- | :--- |
   | `category` | String | Query | X | 카테고리 (예: "정보공유", "정정요청") |
   | `keyword` | String | Query | X | 검색어 |
-  | `sort` | String | Query | X | 정렬 방식 ("latest", "popular") |
   | `page` | Number | Query | X | 페이지 번호 (기본값: 1) |
   | `limit` | Number | Query | X | 페이지당 항목 수 (기본값: 10) |
 
