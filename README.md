@@ -2,7 +2,7 @@
 
 본 문서는 CheatF/T 서비스의 백엔드 API 명세서입니다. 프론트엔드 연동 및 테스트를 위한 더미 데이터(Dummy Data) 형식을 포함하고 있습니다.
 
-## 📌 공통 응답 포맷 (Common Response Format)
+## 공통 응답 포맷 (Common Response Format)
 모든 API 응답은 아래와 같은 일관된 JSON 구조를 가집니다.
 
 ```json
