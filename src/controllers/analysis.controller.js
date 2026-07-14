@@ -1,6 +1,6 @@
 const AnalysisService = require('../services/analysis.service');
 
-exports.requestAnalysis = async (req, res) => {
+const requestAnalysis = async (req, res) => {
   try {
     const { keyword, period } = req.body;
     const userId = req.user?.userId;

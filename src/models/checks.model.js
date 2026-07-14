@@ -10,6 +10,7 @@ exports.createCheck = async (userId, type, content) => {
   return rows[0].id;
 };
 
+// 매개변수에 description 추가 및 쿼리 업데이트
 exports.saveArticle = async (checkId, press, title, description, url, pubDate) => {
   const query = `
     INSERT INTO check_articles (check_id, press, title, description, url, pub_date)

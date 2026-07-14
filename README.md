@@ -160,6 +160,7 @@ fetch('http://localhost:3002/api/analysis', {
   | :--- | :--- | :--- | :--- | :--- |
   | `type` | String | Body | O | `"text"` 또는 `"url"` |
   | `content` | String | Body | O | 검증할 문장 또는 기사 링크 |
+  | `Authorization` | String | Header | X | `Bearer {token}` 형식의 인증 토큰 (선택) |
 
 * **Notes:**
   - 로그인 여부와 관계없이 검증 요청을 보낼 수 있습니다.
@@ -189,6 +190,7 @@ fetch('http://localhost:3002/api/analysis', {
   | `id` | Number | Path | O | 검증 ID |
   | `page` | Number | Query | X | 페이지 번호 (기본값: 1) |
   | `limit` | Number | Query | X | 페이지당 항목 수 (기본값: 10) |
+  | `Authorization` | String | Header | X | `Bearer {token}` 형식의 인증 토큰 (선택) |
 
 * **Response:**
 ```json
@@ -205,6 +207,7 @@ fetch('http://localhost:3002/api/analysis', {
         "articleId": 1001,
         "press": 1,
         "title": "질병청 \"백신 접종 후 사망 사례, 인과성 확인 안돼\"",
+        "description":"기사 내용",
         "url": "https://..."
       }
     ],
@@ -217,7 +220,7 @@ fetch('http://localhost:3002/api/analysis', {
 }
 ```
 
-언론사 넘버는 https://news.naver.com/main/officeList.naver에 나와있는 순서대로 처음부터 0번입니다.
+언론사 넘버는 https://news.naver.com/main/officeList.naver 에 나와있는 순서대로 처음부터 0번입니다.
 
 ---
 

@@ -6,7 +6,7 @@ const db = require('./config/db.config');
 // 라우터 불러오기
 const authRoutes = require('./routes/auth.routes');
 const analysisRoutes = require('./routes/analysis.routes');
-const factcheckRoutes = require('./routes/factcheck.routes');
+const checksRoutes = require('./routes/checks.routes');
 const dummyRoutes = require('./routes/dummy.routes');
 
 const app = express();
@@ -25,7 +25,7 @@ db.pool.connect()
 
 // 라우터 등록
 app.use('/api', authRoutes);         // /api/login, /api/signup, /api/me
-app.use('/api', factcheckRoutes);    // /api/checks, /api/checks/:id
+app.use('/api', checksRoutes);    // /api/checks, /api/checks/:id
 app.use('/api/analysis', analysisRoutes); // /api/analysis, /api/analysis/:id
 app.use('/api', dummyRoutes);       // /api/summary, /api/reports, /api/posts, /api/profile
 
