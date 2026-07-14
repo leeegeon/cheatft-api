@@ -38,3 +38,12 @@ exports.loginUser = async (email, password) => {
     nickname: user.nickname
   };
 };
+
+exports.getUserProfile = async (userId) => {
+  const user = await UserModel.findById(userId);
+  if (!user) {
+    throw new Error('사용자를 찾을 수 없습니다.');
+  }
+
+  return user;
+};

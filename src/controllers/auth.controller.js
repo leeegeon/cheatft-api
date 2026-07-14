@@ -41,3 +41,24 @@ exports.login = async (req, res) => {
     res.status(401).json({ status: 401, message: error.message || "로그인에 실패했습니다." });
   }
 };
+
+exports.getMe = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ status: 401, message: "로그인이 필요한 서비스입니다." });
+    }
+
+    const userData = await AuthService.getUserProfile(userId);
+
+    res.status(200).json({
+      status: 200,
+      message: "사용자 정보 조회 성공",
+      data: userData
+    });
+  } catch (error) {
+    console.error("내 정보 조회 에러:", error);
+    res.status(404).json({ status: 404, message: error.message || "사용자 정보를 찾을 수 없습니다." });
+  }
+};

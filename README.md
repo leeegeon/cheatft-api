@@ -90,10 +90,14 @@ fetch('http://localhost:3002/api/analysis', {
 ```json
 {
   "status": 201,
-  "message": "User created successfully",
+  "message": "회원가입 성공",
   "data": {
-    "userId": 101,
-    "nickname": "신뢰탐색자"
+    "id": 1,
+    "email": "test1@example.com",
+    "nickname": "첫테스터",
+    "level": 1,
+    "user_title": "신규 사용자",
+    "created_at": "2026-07-14T13:56:55.862Z"
   }
 }
 ```
@@ -111,10 +115,35 @@ fetch('http://localhost:3002/api/analysis', {
 ```json
 {
   "status": 200,
-  "message": "Login successful",
+  "message": "로그인 성공",
   "data": {
     "accessToken": "eyJhbGciOiJIUzI1...",
-    "userId": 101
+    "userId": 1,
+    "nickname": "신뢰탐색자"
+  }
+}
+```
+
+### `GET` /api/me
+로그인된 사용자의 기본 정보를 조회합니다.
+
+* **Parameters:**
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `Authorization` | String | Header | O | `Bearer {token}` 형식의 인증 토큰 |
+
+* **Response:**
+```json
+{
+  "status": 200,
+  "message": "사용자 정보 조회 성공",
+  "data": {
+    "id": 1,
+    "email": "test1@example.com",
+    "nickname": "첫테스터",
+    "level": 1,
+    "user_title": "신규 사용자",
+    "created_at": "2026-07-14T13:56:55.862Z"
   }
 }
 ```
