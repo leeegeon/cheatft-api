@@ -161,6 +161,10 @@ fetch('http://localhost:3002/api/analysis', {
   | `type` | String | Body | O | `"text"` 또는 `"url"` |
   | `content` | String | Body | O | 검증할 문장 또는 기사 링크 |
 
+* **Notes:**
+  - 로그인 여부와 관계없이 검증 요청을 보낼 수 있습니다.
+  - 로그인한 사용자의 경우 인증 토큰을 헤더에 포함할 수 있습니다.
+
 * **Response:**
 ```json
 {
@@ -174,6 +178,10 @@ fetch('http://localhost:3002/api/analysis', {
 
 ### `GET` /api/checks/{id}
 특정 검증 요청에 대한 분석 결과(신뢰성 등급, 기사 목록)를 조회합니다.
+
+* **Notes:**
+  - 로그인 여부와 관계없이 검증 결과를 조회할 수 있습니다.
+  - 로그인한 사용자의 경우 인증 토큰을 헤더에 포함할 수 있습니다.
 
 * **Parameters:**
   | Name | Type | In | Required | Description |
@@ -223,11 +231,7 @@ fetch('http://localhost:3002/api/analysis', {
   | :--- | :--- | :--- | :--- | :--- |
   | `keyword` | String | Body | O | 분석할 주제/키워드 |
   | `period` | Number | Body | O | 분석 기간 (단위: 달, 예: `1` = 1개월) |
-  | `Authorization` | String | Header | X | 로그인 시 `Bearer {token}` 형식의 인증 토큰 (선택) |
-
-* **Notes:**
-  - 로그인 여부와 관계없이 분석을 요청할 수 있습니다.
-  - 단, 로그인하지 않은 사용자의 분석은 사용자 계정과 연결되지 않으며, 이후 조회 시 개인화된 사용자 기록으로 보관되지 않습니다.
+  | `Authorization` | String | Header | O | `Bearer {token}` 형식의 인증 토큰  |
 
 * **Response:**
 ```json
@@ -243,16 +247,12 @@ fetch('http://localhost:3002/api/analysis', {
 ### `GET` /api/analysis/{id}
 분석이 완료된 성향 지수, 관련/반박 기사, 주요 인사이트를 조회합니다.
 
-* **Notes:**
-  - 로그인한 사용자의 분석 결과는 개인 계정과 연결되어 조회할 수 있습니다.
-  - 로그인하지 않은 사용자가 요청한 분석 결과는 별도 사용자 기록과 연결되지 않습니다.
-
 * **Parameters:**
   | Name | Type | In | Required | Description |
   | :--- | :--- | :--- | :--- | :--- |
   | `id` | Number | Path | O | 분석 ID |
   | `limit` | Number | Query | X | 최대 항목 수 (기본값: 4) |
-  | `Authorization` | String | Header | X | 로그인 시 `Bearer {token}` 형식의 인증 토큰 (선택) |
+  | `Authorization` | String | Header | O | `Bearer {token}` 형식의 인증 토큰 |
 
 * **Response:**
 ```json

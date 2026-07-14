@@ -163,14 +163,6 @@ exports.getSummary = (req, res) => {
   res.status(200).json({ status: 200, message: 'Success', data: summaryData });
 };
 
-exports.createCheck = (req, res) => {
-  res.status(202).json({ status: 202, message: 'Check requested successfully', data: { checkId: 452 } });
-};
-
-exports.getCheckById = (req, res) => {
-  res.status(200).json({ status: 200, message: 'Success', data: { ...checkDetailData, checkId: Number(req.params.id) || 452 } });
-};
-
 exports.getReports = (req, res) => {
   res.status(200).json({ status: 200, message: 'Success', data: reportsData });
 };

@@ -3,11 +3,14 @@ const AnalysisService = require('../services/analysis.service');
 exports.requestAnalysis = async (req, res) => {
   try {
     const { keyword, period } = req.body;
-    
-    const userId = req.user ? req.user.userId : null; 
+    const userId = req.user?.userId;
 
     if (!keyword || !period) {
       return res.status(400).json({ status: 400, message: "키워드와 분석 기간을 입력해주세요." });
+    }
+
+    if (!userId) {
+      return res.status(401).json({ status: 401, message: "로그인이 필요한 서비스입니다." });
     }
 
     const analysisResult = await AnalysisService.createAnalysis(userId, keyword, period);
