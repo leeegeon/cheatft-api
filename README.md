@@ -13,6 +13,27 @@
 }
 ```
 
+### 인증 토큰 사용 안내
+로그인이 필요한 API는 요청 헤더에 인증 토큰을 포함해야 정상적으로 동작합니다. 일반적으로 `Authorization` 헤더에 `Bearer {token}` 형식으로 전달합니다.
+
+```javascript
+// 프론트엔드(React, Vue 등)에서 보내는 요청 예시
+fetch('http://localhost:3002/api/analysis', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    // 이렇게 헤더에 토큰을 실어 보냅니다!
+    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5c... (생략)'
+  },
+  body: JSON.stringify({
+    keyword: '백신 부작용',
+    period: 1
+  })
+})
+```
+
+로그인이 필요한 기능에 대한 API를 호출할 때에는 위와 같이 헤더에 로그인 시 제공되는 토큰을 포함해야 정상적으로 작동됩니다. 토큰은 생성 후 24시간 동안 유효합니다.
+
 ---
 
 ## 1. 홈 (Home)
