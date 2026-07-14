@@ -1,9 +1,9 @@
 const AnalysisService = require('../services/analysis.service');
 
-exports.requestAnalysis = async (req, res) => {
+const requestAnalysis = async (req, res) => {
   try {
     const { keyword, period } = req.body;
-    
+
     const userId = req.user.userId;
 
     if (!keyword || !period) {
@@ -23,7 +23,7 @@ exports.requestAnalysis = async (req, res) => {
   }
 };
 
-exports.getAnalysisResult = async (req, res) => {
+const getAnalysisResult = async (req, res) => {
   try {
     const analysisId = req.params.id;
 
@@ -42,4 +42,9 @@ exports.getAnalysisResult = async (req, res) => {
     console.error("분석 조회 에러:", error);
     res.status(500).json({ status: 500, message: "서버 오류가 발생했습니다." });
   }
+};
+
+module.exports = {
+  requestAnalysis,
+  getAnalysisResult
 };
