@@ -223,6 +223,7 @@ fetch('http://localhost:3002/api/analysis', {
   | :--- | :--- | :--- | :--- | :--- |
   | `keyword` | String | Body | O | 분석할 주제/키워드 |
   | `period` | Number | Body | O | 분석 기간 (단위: 달, 예: `1` = 1개월) |
+  | `Authorization` | String | Header | X | 로그인 시 `Bearer {token}` 형식의 인증 토큰 (선택) |
 
 * **Notes:**
   - 로그인 여부와 관계없이 분석을 요청할 수 있습니다.
@@ -251,6 +252,7 @@ fetch('http://localhost:3002/api/analysis', {
   | :--- | :--- | :--- | :--- | :--- |
   | `id` | Number | Path | O | 분석 ID |
   | `limit` | Number | Query | X | 최대 항목 수 (기본값: 4) |
+  | `Authorization` | String | Header | X | 로그인 시 `Bearer {token}` 형식의 인증 토큰 (선택) |
 
 * **Response:**
 ```json
