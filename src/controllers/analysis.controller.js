@@ -1,10 +1,10 @@
 const AnalysisService = require('../services/analysis.service');
 
-const requestAnalysis = async (req, res) => {
+exports.requestAnalysis = async (req, res) => {
   try {
     const { keyword, period } = req.body;
-
-    const userId = req.user.userId;
+    
+    const userId = req.user ? req.user.userId : null; 
 
     if (!keyword || !period) {
       return res.status(400).json({ status: 400, message: "키워드와 분석 기간을 입력해주세요." });

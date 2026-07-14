@@ -1,10 +1,10 @@
 // src/routes/analysis.routes.js
 const express = require('express');
 const router = express.Router();
-const { requestAnalysis, getAnalysisResult } = require('../controllers/analysis.controller');
-const { verifyToken } = require('../middlewares/auth.middleware');
+const AnalysisController = require('../controllers/analysis.controller');
+const { optionalVerifyToken } = require('../middlewares/auth.middleware');
 
-router.post('/', verifyToken, requestAnalysis);
-router.get('/:id', verifyToken, getAnalysisResult);
+router.post('/', optionalVerifyToken, AnalysisController.requestAnalysis);
+router.get('/:id', optionalVerifyToken, AnalysisController.getAnalysisResult);
 
 module.exports = router;

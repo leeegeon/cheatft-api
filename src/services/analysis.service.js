@@ -5,15 +5,12 @@ exports.createAnalysis = async (userId, keyword, period) => {
   // 현재는 데이터베이스 연동 및 흐름 테스트를 위해 임의의 로직(가짜 데이터 생성)을 태웁니다.
   const stats = { positive: 10, neutral: 2, negative: 0, score: 80 };
   
-  // 1. 분석 기본 정보 DB 저장
   const analysis = await AnalysisModel.createAnalysis(userId, keyword, period, stats);
   const analysisId = analysis.id;
 
-  // 2. 분석에 속한 기사들 DB 저장
   await AnalysisModel.addArticle(analysisId, '연합뉴스', '전문가 "백신과 사망 간 연관성 매우 낮아"', '긍정');
   await AnalysisModel.addArticle(analysisId, '서울경제', '"백신 부작용 사망 급증" 주장은 사실과 달라', '반박');
   
-  // 3. 주요 인사이트 DB 저장
   await AnalysisModel.addInsight(analysisId, '관련 뉴스 중 긍정/중도 성향의 기사가 다수를 차지합니다.');
   await AnalysisModel.addInsight(analysisId, '반박 기사는 주로 "인과성 부족"을 근거로 반박하고 있습니다.');
 
@@ -21,13 +18,11 @@ exports.createAnalysis = async (userId, keyword, period) => {
 };
 
 exports.getAnalysisData = async (id) => {
-  // 1. DB에서 분석 데이터 모두 가져오기
   const data = await AnalysisModel.getAnalysisById(id);
   if (!data) return null;
 
   const { analysis, articles, insights } = data;
 
-  // 2. 프론트엔드가 요구하는 JSON 규격에 맞게 데이터 재조립
   return {
     analysisId: analysis.id,
     keyword: analysis.keyword,

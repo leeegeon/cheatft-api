@@ -224,6 +224,10 @@ fetch('http://localhost:3002/api/analysis', {
   | `keyword` | String | Body | O | 분석할 주제/키워드 |
   | `period` | Number | Body | O | 분석 기간 (단위: 달, 예: `1` = 1개월) |
 
+* **Notes:**
+  - 로그인 여부와 관계없이 분석을 요청할 수 있습니다.
+  - 단, 로그인하지 않은 사용자의 분석은 사용자 계정과 연결되지 않으며, 이후 조회 시 개인화된 사용자 기록으로 보관되지 않습니다.
+
 * **Response:**
 ```json
 {
@@ -237,6 +241,10 @@ fetch('http://localhost:3002/api/analysis', {
 
 ### `GET` /api/analysis/{id}
 분석이 완료된 성향 지수, 관련/반박 기사, 주요 인사이트를 조회합니다.
+
+* **Notes:**
+  - 로그인한 사용자의 분석 결과는 개인 계정과 연결되어 조회할 수 있습니다.
+  - 로그인하지 않은 사용자가 요청한 분석 결과는 별도 사용자 기록과 연결되지 않습니다.
 
 * **Parameters:**
   | Name | Type | In | Required | Description |
