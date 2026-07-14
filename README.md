@@ -79,7 +79,7 @@ fetch('http://localhost:3002/api/analysis', {
 ### `POST` /api/signup
 신규 회원가입을 처리합니다.
 
-* **Parameters (Body):**
+* **Parameters:**
   | Name | Type | In | Required | Description |
   | :--- | :--- | :--- | :--- | :--- |
   | `email` | String | Body | O | 사용자 이메일 |
@@ -105,7 +105,7 @@ fetch('http://localhost:3002/api/analysis', {
 ### `POST` /api/login
 로그인을 처리하고 인증 토큰을 발급합니다.
 
-* **Parameters (Body):**
+* **Parameters:**
   | Name | Type | In | Required | Description |
   | :--- | :--- | :--- | :--- | :--- |
   | `email` | String | Body | O | 사용자 이메일 |
@@ -155,7 +155,7 @@ fetch('http://localhost:3002/api/analysis', {
 ### `POST` /api/checks
 텍스트나 URL을 기반으로 새로운 팩트체크 검증을 요청합니다.
 
-* **Parameters (Body):**
+* **Parameters:**
   | Name | Type | In | Required | Description |
   | :--- | :--- | :--- | :--- | :--- |
   | `type` | String | Body | O | `"text"` 또는 `"url"` |
@@ -218,7 +218,7 @@ fetch('http://localhost:3002/api/analysis', {
 ### `POST` /api/analysis
 특정 주제나 키워드에 대한 알고리즘 편향성 분석을 요청합니다.
 
-* **Parameters (Body):**
+* **Parameters:**
   | Name | Type | In | Required | Description |
   | :--- | :--- | :--- | :--- | :--- |
   | `keyword` | String | Body | O | 분석할 주제/키워드 |
@@ -378,7 +378,7 @@ fetch('http://localhost:3002/api/analysis', {
 ### `POST` /api/posts
 새로운 게시글을 작성합니다.
 
-* **Parameters (Body):**
+* **Parameters:**
   | Name | Type | In | Required | Description |
   | :--- | :--- | :--- | :--- | :--- |
   | `title` | String | Body | O | 게시글 제목 |
