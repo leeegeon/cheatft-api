@@ -80,11 +80,11 @@ fetch('http://localhost:3002/api/analysis', {
 신규 회원가입을 처리합니다.
 
 * **Parameters (Body):**
-  | Name | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `email` | String | O | 사용자 이메일 |
-  | `password` | String | O | 비밀번호 |
-  | `nickname` | String | O | 사용할 닉네임 |
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `email` | String | Body | O | 사용자 이메일 |
+  | `password` | String | Body | O | 비밀번호 |
+  | `nickname` | String | Body | O | 사용할 닉네임 |
 
 * **Response:**
 ```json
@@ -106,10 +106,10 @@ fetch('http://localhost:3002/api/analysis', {
 로그인을 처리하고 인증 토큰을 발급합니다.
 
 * **Parameters (Body):**
-  | Name | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `email` | String | O | 사용자 이메일 |
-  | `password` | String | O | 비밀번호 |
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `email` | String | Body | O | 사용자 이메일 |
+  | `password` | String | Body | O | 비밀번호 |
 
 * **Response:**
 ```json
@@ -156,10 +156,10 @@ fetch('http://localhost:3002/api/analysis', {
 텍스트나 URL을 기반으로 새로운 팩트체크 검증을 요청합니다.
 
 * **Parameters (Body):**
-  | Name | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `type` | String | O | `"text"` 또는 `"url"` |
-  | `content` | String | O | 검증할 문장 또는 기사 링크 |
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `type` | String | Body | O | `"text"` 또는 `"url"` |
+  | `content` | String | Body | O | 검증할 문장 또는 기사 링크 |
 
 * **Response:**
 ```json
@@ -219,10 +219,10 @@ fetch('http://localhost:3002/api/analysis', {
 특정 주제나 키워드에 대한 알고리즘 편향성 분석을 요청합니다.
 
 * **Parameters (Body):**
-  | Name | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `keyword` | String | O | 분석할 주제/키워드 |
-  | `period` | Number | O | 분석 기간 (단위: 달, 예: `1` = 1개월) |
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `keyword` | String | Body | O | 분석할 주제/키워드 |
+  | `period` | Number | Body | O | 분석 기간 (단위: 달, 예: `1` = 1개월) |
 
 * **Response:**
 ```json
@@ -379,12 +379,12 @@ fetch('http://localhost:3002/api/analysis', {
 새로운 게시글을 작성합니다.
 
 * **Parameters (Body):**
-  | Name | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `title` | String | O | 게시글 제목 |
-  | `content` | String | O | 게시글 본문 |
-  | `category` | String | O | 카테고리 |
-  | `tags` | Array | X | 태그 목록 (예: `["백신", "건강"]`) |
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `title` | String | Body | O | 게시글 제목 |
+  | `content` | String | Body | O | 게시글 본문 |
+  | `category` | String | Body | O | 카테고리 |
+  | `tags` | Array | Body | X | 태그 목록 (예: `["백신", "건강"]`) |
 
 ---
 
