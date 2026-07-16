@@ -1,31 +1,23 @@
-// src/models/checks.model.js
 const db = require('../config/db.config');
 
-exports.createCheck = async (userId, type, content) => {
-  const query = `
-    INSERT INTO checks (user_id, check_type, content) 
-    VALUES ($1, $2, $3) RETURNING id
-  `;
-  const { rows } = await db.query(query, [userId, type, content]);
-  return rows[0].id;
+exports.findByEmail = async (email) => {
+  const query = 'SELECT * FROM users WHERE email = $1';
+  const { rows } = await db.query(query, [email]);
+  return rows[0];
 };
 
-exports.saveArticle = async (checkId, press, title, description, url, pubDate) => {
+exports.createUser = async (email, password, nickname) => {
   const query = `
-    INSERT INTO check_articles (check_id, press, title, description, url, pub_date)
-    VALUES ($1, $2, $3, $4, $5, $6)
+    INSERT INTO users (email, password, nickname) 
+    VALUES ($1, $2, $3) 
+    RETURNING id, email, nickname, level, user_title, created_at
   `;
-  await db.query(query, [checkId, press, title, description, url, pubDate]);
+  const { rows } = await db.query(query, [email, password, nickname]);
+  return rows[0];
 };
 
-exports.getCheckById = async (id) => {
-  const checkQuery = 'SELECT * FROM checks WHERE id = $1';
-  const { rows: checkRows } = await db.query(checkQuery, [id]);
-  
-  if (checkRows.length === 0) return null;
-
-  const articlesQuery = 'SELECT * FROM check_articles WHERE check_id = $1 ORDER BY id ASC';
-  const { rows: articles } = await db.query(articlesQuery, [id]);
-
-  return { check: checkRows[0], articles };
+exports.findById = async (id) => {
+  const query = 'SELECT id, email, nickname, level, user_title, created_at FROM users WHERE id = $1';
+  const { rows } = await db.query(query, [id]);
+  return rows[0];
 };
