@@ -10,7 +10,20 @@ const summaryData = {
       title: '"OOO 백신 부작용 사망자 급증?"',
       result: 'FALSE',
       timeAgo: '2시간 전'
-    }
+    },
+    {
+      id: 1,
+      title: '"지구온난화는 인위적인 조작이다?"',
+      result: 'TRUE',
+      timeAgo: '5시간 전'
+    },
+    {
+      id: 1,
+      title: '"OOO 식물이 암을 치료한다?"',
+      result: 'FALSE',
+      timeAgo: '1일 전'
+    },
+    
   ],
   biasStatus: {
     overallScore: 32,
