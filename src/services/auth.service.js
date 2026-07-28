@@ -5,7 +5,9 @@ const UserModel = require('../models/user.model');
 exports.createUser = async (email, password, nickname) => {
   const existingUser = await UserModel.findByEmail(email);
   if (existingUser) {
-    throw new Error('이미 사용 중인 이메일입니다.');
+    const error = new Error('이미 사용 중인 이메일입니다.');
+    error.status = 409;
+    throw error;
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);

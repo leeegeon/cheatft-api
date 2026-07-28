@@ -25,6 +25,18 @@ const PRESS_MAPPING = {
 
 const stripTags = (value = '') => value.replace(/<[^>]*>?/gm, '');
 
+const decodeHtmlEntities = (value = '') => String(value)
+  .replace(/&quot;/g, '"')
+  .replace(/&#39;/g, "'")
+  .replace(/&amp;/g, '&')
+  .replace(/&lt;/g, '<')
+  .replace(/&gt;/g, '>')
+  .replace(/&nbsp;/g, ' ')
+  .replace(/&#x([0-9A-Fa-f]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+  .replace(/&#(\d+);/g, (_, num) => String.fromCharCode(Number(num)));
+
+const normalizeText = (value = '') => decodeHtmlEntities(stripTags(value));
+
 const getPressFromLink = (link = '') => {
   const match = link.match(/(?:article\/|oid=)(\d+)/);
   if (!match || !match[1]) return '기타 언론사';
@@ -81,8 +93,8 @@ exports.processCheckRequest = async (userId, type, content) => {
     const items = Array.isArray(data.items) ? data.items : [];
 
     for (const item of items) {
-      const cleanTitle = stripTags(item.title || '');
-      const cleanDescription = stripTags(item.description || '');
+      const cleanTitle = normalizeText(item.title || '');
+      const cleanDescription = normalizeText(item.description || '');
       const press = getPressFromLink(item.link || '');
 
       await ChecksModel.saveArticle(
@@ -120,11 +132,10 @@ exports.getCheckData = async (id) => {
     articles: articles.map((a) => ({
       articleId: a.id,
       press: a.press,
-      title: a.title,
-      description: a.description,
+      title: normalizeText(a.title),
+      description: normalizeText(a.description),
       date: new Date(a.pub_date).toISOString().split('T')[0],
       url: a.url
-    })),
-    pagination: { currentPage: 1, totalPages: 1, totalItems: articles.length }
+    }))
   };
 };

@@ -59,6 +59,18 @@ fetch('http://localhost:3002/api/analysis', {
         "title": "\"OOO 백신 부작용 사망자 급증?\"",
         "result": "FALSE",
         "timeAgo": "2시간 전"
+      },
+      {
+        "id": 2,
+        "title": "\"미세먼지가 백신 부작용을 유발한다?\"",
+        "result": "UNVERIFIED",
+        "timeAgo": "5시간 전"
+      },
+      {
+        "id": 3,
+        "title": "\"유전자 변형 식품이 암을 일으킨다?\"",
+        "result": "FALSE",
+        "timeAgo": "1일 전"
       }
     ],
     "biasStatus": {
@@ -153,12 +165,11 @@ fetch('http://localhost:3002/api/analysis', {
 ## 3. 검증하기 (Fact-Check)
 
 ### `POST` /api/checks
-텍스트나 URL을 기반으로 새로운 팩트체크 검증을 요청합니다.
+텍스트를 기반으로 새로운 팩트체크 검증을 요청합니다.
 
 * **Parameters:**
   | Name | Type | In | Required | Description |
   | :--- | :--- | :--- | :--- | :--- |
-  | `type` | String | Body | O | `"text"` 또는 `"url"` |
   | `content` | String | Body | O | 검증할 문장 또는 기사 링크 |
   | `Authorization` | String | Header | X | `Bearer {token}` 형식의 인증 토큰 (선택) |
 
@@ -188,8 +199,6 @@ fetch('http://localhost:3002/api/analysis', {
   | Name | Type | In | Required | Description |
   | :--- | :--- | :--- | :--- | :--- |
   | `id` | Number | Path | O | 검증 ID |
-  | `page` | Number | Query | X | 페이지 번호 (기본값: 1) |
-  | `limit` | Number | Query | X | 페이지당 항목 수 (기본값: 10) |
   | `Authorization` | String | Header | X | `Bearer {token}` 형식의 인증 토큰 (선택) |
 
 * **Response:**
@@ -205,17 +214,12 @@ fetch('http://localhost:3002/api/analysis', {
     "articles": [
       {
         "articleId": 1001,
-        "press": 1,
+        "press": "연합뉴스",
         "title": "질병청 \"백신 접종 후 사망 사례, 인과성 확인 안돼\"",
         "description":"기사 내용",
         "url": "https://..."
       }
-    ],
-    "pagination": {
-      "currentPage": 1,
-      "totalPages": 2,
-      "totalItems": 12
-    }
+    ]
   }
 }
 ```
@@ -238,7 +242,7 @@ fetch('http://localhost:3002/api/analysis', {
 ```json
 {
   "status": 202,
-  "message": "Analysis requested successfully",
+  "message": "분석이 성공적으로 요청되었습니다.",
   "data": {
     "analysisId": 89
   }
@@ -276,7 +280,7 @@ fetch('http://localhost:3002/api/analysis', {
     "relatedArticles": [
       {
         "articleId": 201,
-        "press": 4,
+        "press": "연합뉴스",
         "title": "전문가 \"백신과 사망 간 연관성 매우 낮아\"",
         "stance": "긍정"
       }
@@ -284,7 +288,7 @@ fetch('http://localhost:3002/api/analysis', {
     "counterArticles": [
       {
         "articleId": 301,
-        "press": 8,
+        "press": "YTN",
         "title": "\"백신 부작용 사망 급증\" 주장은 사실과 달라",
         "stance": "반박"
       }
@@ -396,6 +400,19 @@ fetch('http://localhost:3002/api/analysis', {
   | `content` | String | Body | O | 게시글 본문 |
   | `category` | String | Body | O | 카테고리 |
   | `tags` | Array | Body | X | 태그 목록 (예: `["백신", "건강"]`) |
+
+* **Response:**
+```json
+{
+  "status": 201,
+  "message": "Post created successfully",
+  "data": {
+    "id": 1002,
+    "title": "새 게시글",
+    "category": "정보 공유"
+  }
+}
+```
 
 ---
 
