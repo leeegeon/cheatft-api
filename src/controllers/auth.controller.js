@@ -17,7 +17,8 @@ exports.signup = async (req, res) => {
     });
   } catch (error) {
     console.error("회원가입 에러:", error);
-    res.status(500).json({ status: 500, message: error.message || "서버 오류가 발생했습니다." });
+    const statusCode = error.status === 409 ? 409 : 500;
+    res.status(statusCode).json({ status: statusCode, message: error.message || "서버 오류가 발생했습니다." });
   }
 };
 
