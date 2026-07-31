@@ -4,7 +4,8 @@ const router = express.Router();
 const AnalysisController = require('../controllers/analysis.controller');
 const { verifyToken } = require('../middlewares/auth.middleware');
 
-router.post('/', verifyToken, AnalysisController.requestAnalysis);
-router.get('/:id', verifyToken, AnalysisController.getAnalysisResult);
+router.post('/keywords', verifyToken, AnalysisController.recommendKeywords);
+router.post('/analysis', verifyToken, AnalysisController.requestAnalysis);
+router.get('/analysis/:id', verifyToken, AnalysisController.getAnalysisResult);
 
 module.exports = router;

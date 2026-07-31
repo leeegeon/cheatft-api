@@ -177,6 +177,35 @@ fetch('http://localhost:3002/api/analysis', {
 }
 ```
 
+### `POST` /api/checks/article
+네이버 뉴스 URL을 받아 기사 정보를 예시 형식으로 반환합니다.
+
+* **Parameters:**
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `url` | String | Body | O | 네이버 뉴스 링크만 허용 |
+
+* **Notes:**
+  - 인증 토큰은 필요 없습니다.
+  - 오직 `https://n.news.naver.com/article/...` 형식의 네이버 뉴스 링크만 허용됩니다.
+
+* **Response:**
+```json
+{
+  "status": 200,
+  "message": "Success",
+  "data": {
+    "title": "삼전닉스 레버리지 보완 첫날, 거래대금 75% ‘뚝’",
+    "content": "[데일리안 = 서진주 기자] 단일종목 레버리지 상품의 기본예탁금 상향(1000만원→3000만원)이 처음 적용된 31일, 거래대금과 거래량이 큰 폭으로 감소했다.\n\n31일 한국거래소에 따르면 삼성전자와 SK하이닉스를 기초자산으로 하는 단일종목 레버리지·인버스 16종목의 거래대금은 약 3조원으로 집계됐다...",
+    "press": "데일리안",
+    "reporter": "서진주",
+    "inputTime": "2026.07.31. 오후 6:28",
+    "topic": "경제",
+    "url": "https://n.news.naver.com/article/119/0003117138?cds=news_media_pc&type=editn"
+  }
+}
+```
+
 ### `GET` /api/checks/{id}
 특정 검증 요청에 대한 분석 결과(신뢰성 등급, 기사 목록)를 조회합니다.
 
@@ -226,8 +255,60 @@ fetch('http://localhost:3002/api/analysis', {
 
 ## 4. 알고리즘 분석 (Algorithm Analysis)
 
+### `POST` /api/keywords
+입력된 문장이나 단어를 분석하여, 알고리즘 분석에 적합한 연관 키워드를 최대 5개까지 추출하여 추천합니다.
+
+* **Parameters:**
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `content` | String | Body | O | 분석할 문장 또는 단어 |
+  | `Authorization` | String | Header | O | `Bearer {token}` 형식의 인증 토큰  |
+
+* **Response:**
+```json
+{
+  "status": 200,
+  "message": "Keywords recommended successfully",
+  "data": {
+    "keywords": [
+      "백신 부작용",
+      "사망 인과성",
+      "질병관리청 발표",
+      "코로나 백신 안전성",
+      "이상 반응"
+    ]
+  }
+}
+```
+
+### `POST` /api/keywords
+입력된 문장이나 단어를 분석하여, 알고리즘 분석에 적합한 연관 키워드를 최대 5개까지 추출하여 추천합니다.
+
+* **Parameters:**
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `content` | String | Body | O | 분석할 문장 또는 단어 |
+  | `Authorization` | String | Header | O | `Bearer {token}` 형식의 인증 토큰  |
+
+* **Response:**
+```json
+{
+  "status": 200,
+  "message": "Keywords recommended successfully",
+  "data": {
+    "keywords": [
+      "백신 부작용",
+      "사망 인과성",
+      "질병관리청 발표",
+      "코로나 백신 안전성",
+      "이상 반응"
+    ]
+  }
+}
+```
+
 ### `POST` /api/analysis
-특정 주제나 키워드에 대한 알고리즘 편향성 분석을 요청합니다.
+특정 주제나 키워드에 대한 알고리즘 편향성 분석을 요청합니다. `/api/keywords`를 통해 추천된 키워드 중 하나를 선택하여 요청하는 것을 권장합니다.
 
 * **Parameters:**
   | Name | Type | In | Required | Description |

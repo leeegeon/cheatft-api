@@ -1,5 +1,81 @@
 const AnalysisModel = require('../models/analysis.model');
 
+const DEFAULT_KEYWORDS = [
+  '백신 부작용',
+  '사망 인과성',
+  '질병관리청 발표',
+  '코로나 백신 안전성',
+  '이상 반응'
+];
+
+const parseKeywordResponse = (content) => {
+  if (!content) return [];
+
+  const trimmed = content.trim();
+  const match = trimmed.match(/\[(.*?)\]/s);
+
+  if (match) {
+    return match[1]
+      .split(',')
+      .map(item => item.trim().replace(/^['"]|['"]$/g, ''))
+      .filter(Boolean);
+  }
+
+  return trimmed
+    .split(/\n|,/) 
+    .map(item => item.trim().replace(/^['"]|['"]$/g, ''))
+    .filter(Boolean);
+};
+
+exports.getKeywordRecommendations = async (content = '') => {
+  const apiKey = process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error('추천된 키워드가 없습니다.');
+  }
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful assistant that recommends up to 5 relevant Korean keywords for fact-checking or bias analysis.'
+          },
+          {
+            role: 'user',
+            content: `다음 문장이나 단어를 바탕으로 사실검증/편향성 분석에 적합한 한국어 키워드를 최대 5개까지 JSON 배열 형식으로만 반환해줘: ${content || '백신 부작용'}`
+          }
+        ],
+        temperature: 0.2
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const output = data?.choices?.[0]?.message?.content || '';
+    const parsed = parseKeywordResponse(output);
+
+    if (parsed.length > 0) {
+      return parsed.slice(0, 5);
+    }
+  } catch (error) {
+    console.error('OpenAI 키워드 추천 실패:', error.message);
+    throw new Error('추천된 키워드가 없습니다.');
+  }
+
+  throw new Error('추천된 키워드가 없습니다.');
+};
+
 exports.createAnalysis = async (userId, keyword, period) => {
   const stats = { positive: 10, neutral: 2, negative: 0, score: 80 };
 

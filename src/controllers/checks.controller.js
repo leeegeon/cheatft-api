@@ -22,6 +22,27 @@ exports.createCheck = async (req, res) => {
   }
 };
 
+exports.getArticleFromUrl = async (req, res) => {
+  try {
+    const { url } = req.body || {};
+
+    if (!url) {
+      return res.status(400).json({ status: 400, message: 'URL을 입력해주세요.' });
+    }
+
+    const article = await ChecksService.getArticleFromUrl(url);
+
+    res.status(200).json({
+      status: 200,
+      message: 'Success',
+      data: article
+    });
+  } catch (error) {
+    console.error('URL 기사 조회 에러:', error);
+    res.status(400).json({ status: 400, message: error.message || '잘못된 요청입니다.' });
+  }
+};
+
 exports.getCheckById = async (req, res) => {
   try {
     const result = await ChecksService.getCheckData(req.params.id);

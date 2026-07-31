@@ -1,5 +1,27 @@
 const AnalysisService = require('../services/analysis.service');
 
+const recommendKeywords = async (req, res) => {
+  try {
+    const { content } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ status: 400, message: '분석할 문장을 입력해주세요.' });
+    }
+
+    const keywords = await AnalysisService.getKeywordRecommendations(content);
+
+    res.status(200).json({
+      status: 200,
+      message: 'Keywords recommended successfully',
+      data: { keywords }
+    });
+  } catch (error) {
+    console.error('키워드 추천 에러:', error);
+    const message = error.message || '서버 오류가 발생했습니다.';
+    res.status(500).json({ status: 500, message });
+  }
+};
+
 const requestAnalysis = async (req, res) => {
   try {
     const { keyword, period } = req.body;
@@ -48,6 +70,7 @@ const getAnalysisResult = async (req, res) => {
 };
 
 module.exports = {
+  recommendKeywords,
   requestAnalysis,
   getAnalysisResult
 };

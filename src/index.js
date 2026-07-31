@@ -26,7 +26,7 @@ db.pool.connect()
 // 라우터 등록
 app.use('/api', authRoutes);         // /api/login, /api/signup, /api/me
 app.use('/api', checksRoutes);    // /api/checks, /api/checks/:id
-app.use('/api/analysis', analysisRoutes); // /api/analysis, /api/analysis/:id
+app.use('/api', analysisRoutes); // /api/keywords, /api/analysis, /api/analysis/:id
 app.use('/api', dummyRoutes);       // /api/summary, /api/reports, /api/posts, /api/profile
 
 // 기본 상태 확인 라우트
