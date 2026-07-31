@@ -283,32 +283,6 @@ fetch('http://localhost:3002/api/analysis', {
 }
 ```
 
-### `POST` /api/keywords
-입력된 문장이나 단어를 분석하여, 알고리즘 분석에 적합한 연관 키워드를 최대 5개까지 추출하여 추천합니다.
-
-* **Parameters:**
-  | Name | Type | In | Required | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `content` | String | Body | O | 분석할 문장 또는 단어 |
-  | `Authorization` | String | Header | O | `Bearer {token}` 형식의 인증 토큰  |
-
-* **Response:**
-```json
-{
-  "status": 200,
-  "message": "Keywords recommended successfully",
-  "data": {
-    "keywords": [
-      "백신 부작용",
-      "사망 인과성",
-      "질병관리청 발표",
-      "코로나 백신 안전성",
-      "이상 반응"
-    ]
-  }
-}
-```
-
 ### `POST` /api/analysis
 특정 주제나 키워드에 대한 알고리즘 편향성 분석을 요청합니다. `/api/keywords`를 통해 추천된 키워드 중 하나를 선택하여 요청하는 것을 권장합니다.
 
