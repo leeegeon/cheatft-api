@@ -188,7 +188,7 @@ fetch('http://localhost:3002/api/analysis', {
 }
 ```
 
-### `POST` /api/checks/article
+### `POST` /api/article
 네이버 뉴스 URL을 받아 기사 정보를 예시 형식으로 반환합니다.
 
 * **Parameters:**
