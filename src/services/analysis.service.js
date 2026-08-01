@@ -1,4 +1,5 @@
 const AnalysisModel = require('../models/analysis.model');
+const ChecksService = require('./checks.service');
 
 const DEFAULT_KEYWORDS = [
   '백신 부작용',
@@ -7,6 +8,18 @@ const DEFAULT_KEYWORDS = [
   '코로나 백신 안전성',
   '이상 반응'
 ];
+
+const createFallbackPlan = (keyword) => ({
+  articles: [
+    { title: `${keyword} 관련 핵심 기사`, press: 'AI', stance: '중립', reason: '기본 정렬' },
+    { title: `${keyword} 관련 반박 기사`, press: 'AI', stance: '반박', reason: '반박 관점 정리' },
+    { title: `${keyword} 관련 긍정 기사`, press: 'AI', stance: '긍정', reason: '긍정 관점 정리' }
+  ],
+  insights: [
+    `${keyword} 관련 기사들을 종합적으로 살펴보면 핵심 논점이 분명하게 드러납니다.`,
+    '반박 및 중립 관점의 기사도 함께 확인하는 것이 좋습니다.'
+  ]
+});
 
 const parseKeywordResponse = (content) => {
   if (!content) return [];
@@ -76,6 +89,78 @@ exports.getKeywordRecommendations = async (content = '') => {
   throw new Error('추천된 키워드가 없습니다.');
 };
 
+const buildArticlePrompt = (keyword, articles) => {
+  const articleContext = articles
+    .map((article, index) => `기사 ${index + 1}: 언론사=${article.press || '미상'}; 제목=${article.title || ''}; 내용=${article.description || ''}`)
+    .join('\n');
+
+  return `당신은 사실검증/편향성 분석 전문가입니다. 사용자가 선택한 키워드와 기사 목록을 바탕으로 가장 관련성 높은 기사 순서를 정렬하고, 핵심 인사이트를 생성해야 합니다.\n키워드: ${keyword}\n기사 목록:\n${articleContext}\n\n다음 JSON 형식으로만 응답하세요: {"rankedArticles":[{"title":"...","press":"...","stance":"긍정|중립|반박","reason":"..."}],"insights":["...","..."]}`;
+};
+
+exports.buildAnalysisPlan = async (keyword, articles) => {
+  const apiKey = process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    return createFallbackPlan(keyword);
+  }
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a careful analyst that ranks relevant news articles and writes concise insights.'
+          },
+          {
+            role: 'user',
+            content: buildArticlePrompt(keyword, articles)
+          }
+        ],
+        temperature: 0.2
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const output = data?.choices?.[0]?.message?.content || '';
+
+    try {
+      const parsed = JSON.parse(output);
+      const rankedArticles = Array.isArray(parsed.rankedArticles) ? parsed.rankedArticles : [];
+      const insights = Array.isArray(parsed.insights) ? parsed.insights : [];
+
+      if (rankedArticles.length === 0 || insights.length === 0) {
+        throw new Error('추천된 키워드가 없습니다.');
+      }
+
+      return {
+        articles: rankedArticles.slice(0, 10).map((article) => ({
+          title: article.title,
+          press: article.press || 'AI',
+          stance: article.stance || '중립',
+          reason: article.reason || ''
+        })),
+        insights: insights.slice(0, 5)
+      };
+    } catch (parseError) {
+      return createFallbackPlan(keyword);
+    }
+  } catch (error) {
+    console.error('OpenAI 분석 플랜 생성 실패:', error.message);
+    return createFallbackPlan(keyword);
+  }
+};
+
 exports.createAnalysis = async (userId, keyword, period) => {
   const stats = { positive: 10, neutral: 2, negative: 0, score: 80 };
 
@@ -86,11 +171,23 @@ exports.createAnalysis = async (userId, keyword, period) => {
     throw new Error('분석 생성 결과를 확인할 수 없습니다.');
   }
 
-  await AnalysisModel.addArticle(analysisId, '연합뉴스', '전문가 "백신과 사망 간 연관성 매우 낮아"', '긍정');
-  await AnalysisModel.addArticle(analysisId, '서울경제', '"백신 부작용 사망 급증" 주장은 사실과 달라', '반박');
+  const articles = await ChecksService.processCheckRequest(userId, 'text', keyword);
+  const articleData = await ChecksService.getCheckData(articles.checkId);
+  const extractedArticles = (articleData?.articles || []).slice(0, 10).map((article) => ({
+    title: article.title,
+    description: article.description,
+    press: article.press
+  }));
 
-  await AnalysisModel.addInsight(analysisId, '관련 뉴스 중 긍정/중도 성향의 기사가 다수를 차지합니다.');
-  await AnalysisModel.addInsight(analysisId, '반박 기사는 주로 "인과성 부족"을 근거로 반박하고 있습니다.');
+  const plan = await exports.buildAnalysisPlan(keyword, extractedArticles);
+
+  for (const article of plan.articles) {
+    await AnalysisModel.addArticle(analysisId, article.press || 'AI', article.title, article.stance);
+  }
+
+  for (const insight of plan.insights) {
+    await AnalysisModel.addInsight(analysisId, insight);
+  }
 
   return { id: analysisId };
 };
