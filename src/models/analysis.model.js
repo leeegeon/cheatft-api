@@ -36,9 +36,92 @@ const getAnalysisById = async (id) => {
   return { analysis: analysisRows[0], articles, insights };
 };
 
+const getUserReports = async (userId, filters = {}) => {
+  const { keyword = '', date, score, page = 1, limit = 10 } = filters;
+  const parsedPage = Math.max(1, Number(page) || 1);
+  const parsedLimit = Math.max(1, Number(limit) || 10);
+
+  let query = `
+    SELECT id, keyword, created_at, positive_count, neutral_count, negative_count, bias_score
+    FROM analyses
+    WHERE user_id = $1
+  `;
+  const values = [userId];
+  let index = 2;
+
+  if (keyword) {
+    query += ` AND keyword ILIKE $${index}`;
+    values.push(`%${keyword}%`);
+    index += 1;
+  }
+
+  if (date) {
+    query += ` AND created_at >= NOW() - ($${index} * INTERVAL '1 day')`;
+    values.push(Number(date));
+    index += 1;
+  }
+
+  query += ` ORDER BY created_at DESC`;
+
+  const { rows: analyses } = await db.query(query, values);
+
+  const reports = [];
+
+  for (const analysis of analyses) {
+    const articlesQuery = 'SELECT id, press, title, stance FROM analysis_articles WHERE analysis_id = $1';
+    const { rows: articles } = await db.query(articlesQuery, [analysis.id]);
+
+    const insightsQuery = 'SELECT content FROM analysis_insights WHERE analysis_id = $1 ORDER BY id ASC';
+    const { rows: insights } = await db.query(insightsQuery, [analysis.id]);
+
+    const relatedCount = articles.filter((article) => article.stance !== '반박').length;
+    const counterCount = articles.filter((article) => article.stance === '반박').length;
+    const averageReliability = Number((2.5 + (Number(analysis.bias_score || 0) / 100) * 1.2).toFixed(1));
+
+    if (score && averageReliability < Number(score)) {
+      continue;
+    }
+
+    reports.push({
+      id: analysis.id,
+      topic: analysis.keyword,
+      searchTime: analysis.created_at,
+      status: '분석 완료',
+      relatedCount,
+      counterCount,
+      averageReliability,
+      mainPresses: Object.values(articles.reduce((acc, article) => {
+        const press = article.press || '미상';
+        acc[press] = (acc[press] || 0) + 1;
+        return acc;
+      }, {})).sort((a, b) => b - a).slice(0, 3),
+      summary: insights[0]?.content || `${analysis.keyword}에 대한 분석이 완료되었습니다.`
+    });
+  }
+
+  const totalItems = reports.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / parsedLimit));
+  const currentPage = Math.min(parsedPage, totalPages);
+  const startIndex = (currentPage - 1) * parsedLimit;
+  const pagedReports = reports.slice(startIndex, startIndex + parsedLimit);
+
+  return {
+    totalStats: {
+      searchedTopics: totalItems,
+      analyzedArticles: reports.reduce((sum, report) => sum + report.relatedCount + report.counterCount, 0),
+      averageReliability: totalItems > 0
+        ? Number((reports.reduce((sum, report) => sum + report.averageReliability, 0) / totalItems).toFixed(1))
+        : 0
+    },
+    reports: pagedReports,
+    pagination: { currentPage, totalPages, totalItems }
+  };
+};
+
 module.exports = {
   createAnalysis,
   addArticle,
   addInsight,
-  getAnalysisById
+  getAnalysisById,
+  getUserReports
 };
