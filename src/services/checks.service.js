@@ -146,7 +146,7 @@ exports.processCheckRequest = async (userId, type, content) => {
   try {
     const url = new URL('https://openapi.naver.com/v1/search/news.json');
     url.searchParams.set('query', content);
-    url.searchParams.set('display', '12');
+    url.searchParams.set('display', '100');
     url.searchParams.set('sort', 'sim');
 
     const response = await fetch(url.toString(), {
