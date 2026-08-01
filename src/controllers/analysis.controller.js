@@ -12,7 +12,7 @@ const recommendKeywords = async (req, res) => {
 
     res.status(200).json({
       status: 200,
-      message: 'Keywords recommended successfully',
+      message: '키워드 추천이 성공적으로 완료되었습니다.',
       data: { keywords }
     });
   } catch (error) {
@@ -40,7 +40,7 @@ const requestAnalysis = async (req, res) => {
     res.status(202).json({
       status: 202,
       message: "분석이 성공적으로 요청되었습니다.",
-      data: { analysisId: analysisResult.id }
+      data: { analysisId: analysisResult.analysisId }
     });
   } catch (error) {
     console.error("분석 요청 에러:", error);
@@ -51,8 +51,9 @@ const requestAnalysis = async (req, res) => {
 const getAnalysisResult = async (req, res) => {
   try {
     const analysisId = req.params.id;
+    const limit = req.query.limit;
 
-    const data = await AnalysisService.getAnalysisData(analysisId);
+    const data = await AnalysisService.getAnalysisData(analysisId, limit);
 
     if (!data) {
       return res.status(404).json({ status: 404, message: "해당 분석 결과를 찾을 수 없습니다." });
@@ -60,7 +61,7 @@ const getAnalysisResult = async (req, res) => {
 
     res.status(200).json({
       status: 200,
-      message: "Success",
+      message: "성공",
       data: data
     });
   } catch (error) {

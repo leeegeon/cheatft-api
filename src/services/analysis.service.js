@@ -101,7 +101,7 @@ exports.buildAnalysisPlan = async (keyword, articles) => {
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
-    return createFallbackPlan(keyword);
+    throw new Error('OpenAI API 키가 설정되지 않아 분석 계획을 생성할 수 없습니다.');
   }
 
   try {
@@ -134,43 +134,36 @@ exports.buildAnalysisPlan = async (keyword, articles) => {
     const data = await response.json();
     const output = data?.choices?.[0]?.message?.content || '';
 
+    let parsed;
     try {
-      const parsed = JSON.parse(output);
-      const rankedArticles = Array.isArray(parsed.rankedArticles) ? parsed.rankedArticles : [];
-      const insights = Array.isArray(parsed.insights) ? parsed.insights : [];
-
-      if (rankedArticles.length === 0 || insights.length === 0) {
-        throw new Error('추천된 키워드가 없습니다.');
-      }
-
-      return {
-        articles: rankedArticles.slice(0, 10).map((article) => ({
-          title: article.title,
-          press: article.press || 'AI',
-          stance: article.stance || '중립',
-          reason: article.reason || ''
-        })),
-        insights: insights.slice(0, 5)
-      };
+      parsed = JSON.parse(output);
     } catch (parseError) {
-      return createFallbackPlan(keyword);
+      throw new Error('OpenAI 응답 형식이 올바르지 않습니다.');
     }
+
+    const rankedArticles = Array.isArray(parsed.rankedArticles) ? parsed.rankedArticles : [];
+    const insights = Array.isArray(parsed.insights) ? parsed.insights : [];
+
+    if (rankedArticles.length === 0 || insights.length === 0) {
+      throw new Error('OpenAI 응답에 분석 데이터가 포함되지 않았습니다.');
+    }
+
+    return {
+      articles: rankedArticles.slice(0, 10).map((article) => ({
+        title: article.title,
+        press: article.press || 'AI',
+        stance: article.stance || '중립',
+        reason: article.reason || ''
+      })),
+      insights: insights.slice(0, 5)
+    };
   } catch (error) {
     console.error('OpenAI 분석 플랜 생성 실패:', error.message);
-    return createFallbackPlan(keyword);
+    throw error;
   }
 };
 
 exports.createAnalysis = async (userId, keyword, period) => {
-  const stats = { positive: 10, neutral: 2, negative: 0, score: 80 };
-
-  const analysis = await AnalysisModel.createAnalysis(userId, keyword, period, stats);
-  const analysisId = analysis?.id ?? analysis?.rows?.[0]?.id;
-
-  if (!analysisId) {
-    throw new Error('분석 생성 결과를 확인할 수 없습니다.');
-  }
-
   const articles = await ChecksService.processCheckRequest(userId, 'text', keyword);
   const articleData = await ChecksService.getCheckData(articles.checkId);
   const extractedArticles = (articleData?.articles || []).slice(0, 10).map((article) => ({
@@ -181,6 +174,34 @@ exports.createAnalysis = async (userId, keyword, period) => {
 
   const plan = await exports.buildAnalysisPlan(keyword, extractedArticles);
 
+  const stanceCounts = plan.articles.reduce((counts, article) => {
+    if (article.stance === '반박') {
+      counts.negative += 1;
+    } else if (article.stance === '긍정') {
+      counts.positive += 1;
+    } else {
+      counts.neutral += 1;
+    }
+    return counts;
+  }, { positive: 0, neutral: 0, negative: 0 });
+
+  const totalArticles = plan.articles.length || 1;
+  const biasScore = Math.max(0, Math.min(100, Math.round(((stanceCounts.positive * 1 + stanceCounts.neutral * 0.5 - stanceCounts.negative * 0.5) / totalArticles) * 100)));
+
+  const stats = {
+    positive: stanceCounts.positive,
+    neutral: stanceCounts.neutral,
+    negative: stanceCounts.negative,
+    score: biasScore
+  };
+
+  const analysis = await AnalysisModel.createAnalysis(userId, keyword, period, stats);
+  const analysisId = analysis?.id ?? analysis?.rows?.[0]?.id;
+
+  if (!analysisId) {
+    throw new Error('분석 생성 결과를 확인할 수 없습니다.');
+  }
+
   for (const article of plan.articles) {
     await AnalysisModel.addArticle(analysisId, article.press || 'AI', article.title, article.stance);
   }
@@ -189,14 +210,33 @@ exports.createAnalysis = async (userId, keyword, period) => {
     await AnalysisModel.addInsight(analysisId, insight);
   }
 
-  return { id: analysisId };
+  return { analysisId };
 };
 
-exports.getAnalysisData = async (id) => {
+exports.getAnalysisData = async (id, limit = 4) => {
   const data = await AnalysisModel.getAnalysisById(id);
   if (!data) return null;
 
+  const parsedLimit = Number.isFinite(Number(limit)) ? Math.max(1, parseInt(limit, 10)) : 4;
   const { analysis, articles, insights } = data;
+  const relatedArticles = articles
+    .filter((article) => article.stance !== '반박')
+    .slice(0, parsedLimit)
+    .map((article) => ({
+      articleId: article.id,
+      press: article.press,
+      title: article.title,
+      stance: article.stance
+    }));
+  const counterArticles = articles
+    .filter((article) => article.stance === '반박')
+    .slice(0, parsedLimit)
+    .map((article) => ({
+      articleId: article.id,
+      press: article.press,
+      title: article.title,
+      stance: article.stance
+    }));
 
   return {
     analysisId: analysis.id,
@@ -207,14 +247,14 @@ exports.getAnalysisData = async (id) => {
       negativeCount: analysis.negative_count,
       biasScore: analysis.bias_score
     },
-    insights: insights.map(i => i.content), // 텍스트 배열로 변환
-    relatedArticles: articles.filter(a => a.stance !== '반박'),
-    counterArticles: articles.filter(a => a.stance === '반박'),
+    insights: insights.map((insight) => insight.content),
+    relatedArticles,
+    counterArticles,
     summaryStats: {
       collectedArticles: articles.length,
-      pressCount: new Set(articles.map(a => a.press)).size, // 중복 제거된 언론사 수
-      averageReliability: 3.2 // 임시값
+      pressCount: new Set(articles.map((article) => article.press)).size,
+      averageReliability: 3.2
     },
-    pagination: { currentPage: 1, totalPages: 1, totalItems: articles.length }
+    limit: parsedLimit
   };
 };
