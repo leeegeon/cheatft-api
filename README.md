@@ -39,9 +39,12 @@ fetch('http://localhost:3002/api/analysis', {
 ## 1. 홈 (Home)
 
 ### `GET` /api/summary
-홈 화면의 대시보드 요약 정보(검증 통계, 최신 팩트체크, 편향성 현황)를 조회합니다.
+홈 화면의 대시보드 요약 정보(검증 통계, 최신 팩트체크)를 조회합니다.
 
 * **Parameters:** None
+* **Notes:**
+  - 인증 토큰 없이도 조회할 수 있습니다.
+  - 서비스 전체의 최근 분석 결과와 통계를 기준으로 응답합니다.
 * **Response:**
 ```json
 {
@@ -72,14 +75,7 @@ fetch('http://localhost:3002/api/analysis', {
         "result": "FALSE",
         "timeAgo": "1일 전"
       }
-    ],
-    "biasStatus": {
-      "overallScore": 32,
-      "categories": [
-        { "name": "정치", "score": 28, "level": "보통" },
-        { "name": "사회", "score": 45, "level": "다소 높음" }
-      ]
-    }
+    ]
   }
 }
 ```
@@ -337,7 +333,8 @@ fetch('http://localhost:3002/api/analysis', {
         "articleId": 201,
         "press": "연합뉴스",
         "title": "전문가 \"백신과 사망 간 연관성 매우 낮아\"",
-        "stance": "긍정"
+        "stance": "긍정",
+        "url": "https://example.com/articles/201"
       }
     ],
     "counterArticles": [
@@ -345,7 +342,8 @@ fetch('http://localhost:3002/api/analysis', {
         "articleId": 301,
         "press": "YTN",
         "title": "\"백신 부작용 사망 급증\" 주장은 사실과 달라",
-        "stance": "반박"
+        "stance": "반박",
+        "url": "https://example.com/articles/301"
       }
     ],
     "summaryStats": {
@@ -399,6 +397,26 @@ fetch('http://localhost:3002/api/analysis', {
       }
     ],
     "pagination": { "currentPage": 1, "totalPages": 2, "totalItems": 18 }
+  }
+}
+```
+
+### `DELETE` /api/reports/{id}
+리포트 ID를 통해 특정 팩트체크 리포트를 삭제합니다.
+
+* **Parameters:**
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `id` | Number | Path | O | 삭제할 리포트 ID |
+  | `Authorization` | String | Header | O | `Bearer {token}` 형식의 인증 토큰 |
+
+* **Response:**
+```json
+{
+  "status": 200,
+  "message": "Report deleted successfully",
+  "data": {
+    "deletedReportId": 501
   }
 }
 ```

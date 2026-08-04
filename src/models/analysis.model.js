@@ -1,5 +1,16 @@
 const db = require('../config/db.config');
 
+const ensureAnalysisArticleUrlColumn = async () => {
+  try {
+    await db.query('ALTER TABLE analysis_articles ADD COLUMN IF NOT EXISTS url TEXT');
+  } catch (error) {
+    if (error?.message && /already exists|column/i.test(error.message)) {
+      return;
+    }
+    throw error;
+  }
+};
+
 const createAnalysis = async (userId, keyword, period, stats) => {
   const query = `
     INSERT INTO analyses (user_id, keyword, period_months, positive_count, neutral_count, negative_count, bias_score)
@@ -11,9 +22,10 @@ const createAnalysis = async (userId, keyword, period, stats) => {
   return rows[0];
 };
 
-const addArticle = async (analysisId, press, title, stance) => {
-  const query = `INSERT INTO analysis_articles (analysis_id, press, title, stance) VALUES ($1, $2, $3, $4)`;
-  await db.query(query, [analysisId, press, title, stance]);
+const addArticle = async (analysisId, press, title, stance, url = null) => {
+  await ensureAnalysisArticleUrlColumn();
+  const query = `INSERT INTO analysis_articles (analysis_id, press, title, stance, url) VALUES ($1, $2, $3, $4, $5)`;
+  await db.query(query, [analysisId, press, title, stance, url]);
 };
 
 const addInsight = async (analysisId, content) => {
@@ -22,18 +34,51 @@ const addInsight = async (analysisId, content) => {
 };
 
 const getAnalysisById = async (id) => {
+  await ensureAnalysisArticleUrlColumn();
+
   const analysisQuery = 'SELECT * FROM analyses WHERE id = $1';
   const { rows: analysisRows } = await db.query(analysisQuery, [id]);
 
   if (analysisRows.length === 0) return null;
 
-  const articlesQuery = 'SELECT id as "articleId", press, title, stance FROM analysis_articles WHERE analysis_id = $1';
+  const articlesQuery = 'SELECT id as "articleId", press, title, stance, url FROM analysis_articles WHERE analysis_id = $1';
   const { rows: articles } = await db.query(articlesQuery, [id]);
 
   const insightsQuery = 'SELECT content FROM analysis_insights WHERE analysis_id = $1 ORDER BY id ASC';
   const { rows: insights } = await db.query(insightsQuery, [id]);
 
   return { analysis: analysisRows[0], articles, insights };
+};
+
+const getSummary = async () => {
+  const { rows: analyses } = await db.query(
+    `SELECT id, keyword, created_at, positive_count, neutral_count, negative_count, bias_score
+     FROM analyses
+     ORDER BY created_at DESC
+     LIMIT 3`
+  );
+
+  const recentChecks = analyses.map((analysis) => ({
+    id: analysis.id,
+    title: analysis.keyword,
+    result: analysis.bias_score >= 60 ? 'FALSE' : analysis.bias_score >= 40 ? 'UNVERIFIED' : 'TRUE',
+    timeAgo: '최근 분석'
+  }));
+
+  const totalReports = analyses.length;
+  const completed = analyses.length;
+  const accuracyRate = totalReports > 0
+    ? Math.round(analyses.reduce((sum, analysis) => sum + (analysis.bias_score >= 60 ? 100 : 80), 0) / totalReports)
+    : 0;
+
+  return {
+    todayStats: {
+      requests: totalReports,
+      completed,
+      accuracyRate
+    },
+    recentChecks
+  };
 };
 
 const getUserReports = async (userId, filters = {}) => {
@@ -68,7 +113,7 @@ const getUserReports = async (userId, filters = {}) => {
   const reports = [];
 
   for (const analysis of analyses) {
-    const articlesQuery = 'SELECT id, press, title, stance FROM analysis_articles WHERE analysis_id = $1';
+    const articlesQuery = 'SELECT id, press, title, stance, url FROM analysis_articles WHERE analysis_id = $1';
     const { rows: articles } = await db.query(articlesQuery, [analysis.id]);
 
     const insightsQuery = 'SELECT content FROM analysis_insights WHERE analysis_id = $1 ORDER BY id ASC';
@@ -118,10 +163,44 @@ const getUserReports = async (userId, filters = {}) => {
   };
 };
 
+const deleteUserReport = async (userId, reportId) => {
+  const client = await db.pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const { rows } = await client.query(
+      'SELECT id FROM analyses WHERE id = $1 AND user_id = $2',
+      [reportId, userId]
+    );
+
+    if (rows.length === 0) {
+      const error = new Error('삭제할 리포트를 찾을 수 없습니다.');
+      error.status = 404;
+      throw error;
+    }
+
+    await client.query('DELETE FROM analysis_insights WHERE analysis_id = $1', [reportId]);
+    await client.query('DELETE FROM analysis_articles WHERE analysis_id = $1', [reportId]);
+    await client.query('DELETE FROM analyses WHERE id = $1 AND user_id = $2', [reportId, userId]);
+
+    await client.query('COMMIT');
+
+    return { deletedReportId: reportId };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
 module.exports = {
   createAnalysis,
   addArticle,
   addInsight,
   getAnalysisById,
-  getUserReports
+  getSummary,
+  getUserReports,
+  deleteUserReport
 };
