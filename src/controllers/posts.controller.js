@@ -15,6 +15,15 @@ exports.createPost = async (req, res) => {
       return res.status(400).json({ status: 400, message: "필수 항목(제목, 본문, 카테고리)이 누락되었습니다." });
     }
 
+    const allowedCategories = ['정보 공유 커뮤니티', '정정 요청', '토론 게시판']; 
+
+    if (!allowedCategories.includes(category)) {
+      return res.status(400).json({ 
+        status: 400, 
+        message: `유효하지 않은 게시판입니다. 허용된 게시판: ${allowedCategories.join(', ')}` 
+      });
+    }
+
     const newPost = await PostsService.createPost(userId, title, content, category, tags);
 
     res.status(201).json({
