@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth.routes');
 const analysisRoutes = require('./routes/analysis.routes');
 const checksRoutes = require('./routes/checks.routes');
 const dummyRoutes = require('./routes/dummy.routes');
+const postsRoutes = require('./routes/posts.routes');
 
 const app = express();
 const port = process.env.PORT || 3002;
