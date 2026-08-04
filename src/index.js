@@ -8,7 +8,11 @@ const authRoutes = require('./routes/auth.routes');
 const analysisRoutes = require('./routes/analysis.routes');
 const checksRoutes = require('./routes/checks.routes');
 const dummyRoutes = require('./routes/dummy.routes');
+<<<<<<< HEAD
 const postsRoutes = require('./routes/posts.routes');
+=======
+const reportsRoutes = require('./routes/reports.routes');
+>>>>>>> b4a1962a23f85da13414582d19b7e5100a4b5ff3
 
 const app = express();
 const port = process.env.PORT || 3002;
@@ -28,7 +32,8 @@ db.pool.connect()
 app.use('/api', authRoutes);         // /api/login, /api/signup, /api/me
 app.use('/api', checksRoutes);    // /api/checks, /api/checks/:id
 app.use('/api', analysisRoutes); // /api/keywords, /api/analysis, /api/analysis/:id
-app.use('/api', dummyRoutes);       // /api/summary, /api/reports, /api/posts, /api/profile
+app.use('/api', reportsRoutes);   // /api/reports
+app.use('/api', dummyRoutes);       // /api/summary, /api/posts, /api/profile
 
 // 기본 상태 확인 라우트
 app.get('/api/health', (req, res) => {
