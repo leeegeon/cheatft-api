@@ -162,12 +162,12 @@ fetch('http://localhost:3002/api/analysis', {
 ## 3. 검증하기 (Fact-Check)
 
 ### `POST` /api/checks
-텍스트를 기반으로 새로운 팩트체크 검증을 요청합니다.
+입력된 문장이나 키워드를 기반으로 새로운 팩트체크 검증을 요청합니다.
 
 * **Parameters:**
   | Name | Type | In | Required | Description |
   | :--- | :--- | :--- | :--- | :--- |
-  | `content` | String | Body | O | 검증할 문장 또는 기사 링크 |
+  | `content` | String | Body | O | 검증할 문장 또는 키워드 |
   | `Authorization` | String | Header | X | `Bearer {token}` 형식의 인증 토큰 (선택) |
 
 * **Notes:**
@@ -372,12 +372,13 @@ fetch('http://localhost:3002/api/analysis', {
   | `score` | Number | Query | X | 평균 신뢰도 이상 필터 |
   | `page` | Number | Query | X | 페이지 번호 (기본값: 1) |
   | `limit` | Number | Query | X | 페이지당 항목 수 (기본값: 10) |
+  | `Authorization` | String | Header | O | `Bearer {token}` 형식의 인증 토큰 |
 
 * **Response:**
 ```json
 {
   "status": 200,
-  "message": "Success",
+  "message": "성공",
   "data": {
     "totalStats": {
       "searchedTopics": 18,
@@ -415,8 +416,9 @@ fetch('http://localhost:3002/api/analysis', {
 ```json
 {
   "status": 200,
-  "message": "Report deleted successfully",
+  "message": "성공",
   "data": {
+    "message": "팩트체크 리포트가 삭제되었습니다.",
     "deletedReportId": 501
   }
 }

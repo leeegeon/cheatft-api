@@ -129,7 +129,9 @@ exports.getArticleFromUrl = async (url) => {
   return EXAMPLE_ARTICLE;
 };
 
-exports.processCheckRequest = async (userId, type, content) => {
+exports.processCheckRequest = async (userId, param2, param3) => {
+  const content = param3 !== undefined ? param3 : param2;
+  const type = param3 !== undefined ? param2 : 'keyword';
   const checkId = await ChecksModel.createCheck(userId, type, content);
 
   const clientId = process.env.NAVER_CLIENT_ID;

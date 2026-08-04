@@ -28,7 +28,7 @@ db.pool.connect()
 app.use('/api', authRoutes);         // /api/login, /api/signup, /api/me
 app.use('/api', checksRoutes);    // /api/checks, /api/checks/:id
 app.use('/api', analysisRoutes); // /api/keywords, /api/analysis, /api/analysis/:id
-app.use('/api/reports', reportsRoutes);  // /api/reports, /api/reports/:id
+app.use('/api', reportsRoutes);  // /api/summary, /api/reports, /api/reports/:id
 app.use('/api/posts', postsRoutes); // /api/posts, /api/posts/:id
 
 // 기본 상태 확인 라우트

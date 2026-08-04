@@ -2,14 +2,14 @@ const ChecksService = require('../services/checks.service');
 
 exports.createCheck = async (req, res) => {
   try {
-    const { type, content } = req.body || {};
+    const { content } = req.body || {};
 
-    if (!type || !content) {
-      return res.status(400).json({ status: 400, message: 'type과 content를 모두 입력해주세요.' });
+    if (!content || (typeof content === 'string' && !content.trim())) {
+      return res.status(400).json({ status: 400, message: '검증할 문장 또는 키워드를 입력해주세요.' });
     }
 
     const userId = req.user?.userId ?? null;
-    const result = await ChecksService.processCheckRequest(userId, type, content);
+    const result = await ChecksService.processCheckRequest(userId, typeof content === 'string' ? content.trim() : content);
 
     res.status(202).json({
       status: 202,
