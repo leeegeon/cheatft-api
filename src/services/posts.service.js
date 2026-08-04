@@ -54,3 +54,20 @@ exports.createComment = async (postId, userId, content) => {
 exports.deleteComment = async (commentId, userId) => {
   return await PostsModel.deleteComment(commentId, userId);
 };
+
+exports.getPostDetail = async (postId) => {
+  await PostsModel.incrementViewCount(postId);
+
+  const post = await PostsModel.getPostById(postId);
+  
+  if (!post) {
+    return null;
+  }
+
+  const comments = await PostsModel.getCommentsByPostId(postId);
+
+  return {
+    ...post,
+    comments
+  };
+};
