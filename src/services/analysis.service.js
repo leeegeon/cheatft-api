@@ -94,11 +94,7 @@ const buildArticlePrompt = (keyword, articles) => {
     .map((article, index) => `기사 ${index + 1}: 언론사=${article.press || '미상'}; 제목=${article.title || ''}; 내용=${article.description || ''}`)
     .join('\n');
 
-<<<<<<< HEAD
-  return `당신은 사실검증/편향성 분석 전문가입니다. 사용자가 선택한 키워드와 기사 목록을 바탕으로 가장 관련성 높은 기사 순서를 정렬하고, 핵심 인사이트를 생성해야 합니다. 뉴스 기사를 기반으로 해당 정보가 사실인지 거짓인지 판단해야 합니다.\n키워드: ${keyword}\n기사 목록:\n${articleContext}\n\n다음 JSON 형식으로만 응답하세요: {"rankedArticles":[{"title":"...","press":"...","stance":"긍정|중립|반박","reason":"..."}],"insights":["...","..."]}`;
-=======
   return `당신은 사실검증/편향성 분석 전문가입니다. 사용자가 선택한 키워드와 기사 목록을 바탕으로 가장 관련성 높은 기사 순서를 정렬하고, 핵심 인사이트를 생성해야 합니다. 인사이트에는 해당 키워드와 관련된 중요한 정보 및 해당 키워드가 사실인지 거짓인지에 대한 판단이 포함되어야 합니다. 관련이 없거나 중요하지 않은 기사는 제외하되, 긍정 / 중립 / 반박 기사가 골고루 포함되도록 기사를 최대 10개 내외로 선정하세요.\n키워드: ${keyword}\n기사 목록:\n${articleContext}\n\n다음 JSON 형식으로만 응답하세요: {"rankedArticles":[{"title":"...","press":"...","stance":"긍정|중립|반박","reason":"..."}],"insights":["...","..."]}`;
->>>>>>> b4a1962a23f85da13414582d19b7e5100a4b5ff3
 };
 
 exports.buildAnalysisPlan = async (keyword, articles) => {
@@ -207,11 +203,7 @@ exports.createAnalysis = async (userId, keyword, period) => {
   }
 
   for (const article of plan.articles) {
-<<<<<<< HEAD
-    await AnalysisModel.addArticle(analysisId, article.press, article.title, article.stance);
-=======
     await AnalysisModel.addArticle(analysisId, article.press || 'AI', article.title, article.stance, article.url || null);
->>>>>>> b4a1962a23f85da13414582d19b7e5100a4b5ff3
   }
 
   for (const insight of plan.insights) {
