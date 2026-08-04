@@ -24,6 +24,7 @@ exports.getPostsList = async (category, keyword, page = 1, limit = 10) => {
       id: post.id,
       category: post.category,
       title: post.title,
+      preview: post.content_preview,
       author: post.author,
       createdAt: post.created_at,
       views: post.views,
@@ -35,4 +36,21 @@ exports.getPostsList = async (category, keyword, page = 1, limit = 10) => {
       totalItems
     }
   };
+};
+
+exports.updatePost = async (postId, userId, title, content, category, tags) => {
+  const postTags = Array.isArray(tags) ? tags : [];
+  return await PostsModel.updatePost(postId, userId, title, content, category, postTags);
+};
+
+exports.deletePost = async (postId, userId) => {
+  return await PostsModel.deletePost(postId, userId);
+};
+
+exports.createComment = async (postId, userId, content) => {
+  return await PostsModel.createComment(postId, userId, content);
+};
+
+exports.deleteComment = async (commentId, userId) => {
+  return await PostsModel.deleteComment(commentId, userId);
 };
