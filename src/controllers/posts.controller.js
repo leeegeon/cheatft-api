@@ -3,8 +3,13 @@ const PostsService = require('../services/posts.service');
 
 exports.createPost = async (req, res) => {
   try {
-    const userId = req.user.id; 
     const { title, content, category, tags } = req.body;
+
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ status: 401, message: '로그인이 필요한 서비스입니다.' });
+    }
 
     if (!title || !content || !category) {
       return res.status(400).json({ status: 400, message: "필수 항목(제목, 본문, 카테고리)이 누락되었습니다." });
