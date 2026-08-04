@@ -95,6 +95,11 @@ exports.deletePost = async (postId, userId) => {
 };
 
 exports.createComment = async (postId, userId, content) => {
+  const checkPost = await db.query(`SELECT id FROM posts WHERE id = $1`, [postId]);
+  if (checkPost.rows.length === 0) {
+    return null;
+  }
+
   const commentQuery = `
     INSERT INTO comments (post_id, user_id, content)
     VALUES ($1, $2, $3)
@@ -106,12 +111,12 @@ exports.createComment = async (postId, userId, content) => {
   return rows[0];
 };
 
-exports.deleteComment = async (commentId, userId) => {
-  const deleteQuery = `DELETE FROM comments WHERE id = $1 AND user_id = $2 RETURNING post_id`;
-  const { rows } = await db.query(deleteQuery, [commentId, userId]);
+exports.deleteComment = async (commentId, postId, userId) => {
+  const deleteQuery = `DELETE FROM comments WHERE id = $1 AND post_id = $2 AND user_id = $3 RETURNING post_id`;
+  const { rows } = await db.query(deleteQuery, [commentId, postId, userId]);
 
   if (rows.length > 0) {
-    await db.query(`UPDATE posts SET comment_count = comment_count - 1 WHERE id = $1`, [rows[0].post_id]);
+    await db.query(`UPDATE posts SET comment_count = GREATEST(0, comment_count - 1) WHERE id = $1`, [rows[0].post_id]);
     return true; // 성공
   }
   return false; // 권한 없음 또는 존재하지 않는 댓글
@@ -142,4 +147,4 @@ exports.getCommentsByPostId = async (postId) => {
   `;
   const { rows } = await db.query(query, [postId]);
   return rows;
-};
+};

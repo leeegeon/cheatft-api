@@ -432,10 +432,10 @@ fetch('http://localhost:3002/api/analysis', {
 * **Parameters:**
   | Name | Type | In | Required | Description |
   | :--- | :--- | :--- | :--- | :--- |
-  | `category` | String | Query | X | 카테고리 (예: "정보공유", "정정요청") |
-  | `keyword` | String | Query | X | 검색어 |
+  | `category` | String | Query | X | 카테고리 (예: `"정보 공유 커뮤니티"`, `"정정 요청"`, `"토론 게시판"`) |
+  | `keyword` | String | Query | X | 검색어 (제목 또는 본문) |
   | `page` | Number | Query | X | 페이지 번호 (기본값: 1) |
-  | `limit` | Number | Query | X | 페이지당 항목 수 (기본값: 10) |
+  | `limit` | Number | Query | X | 페이지당 항목 수 (기본값: 10, 최대: 100) |
 
 * **Response:**
 ```json
@@ -451,15 +451,60 @@ fetch('http://localhost:3002/api/analysis', {
     "posts": [
       {
         "id": 1001,
-        "category": "정보 공유",
+        "category": "정보 공유 커뮤니티",
         "title": "백신 부작용 사망자 급증? 관련 추가 자료 공유합니다.",
-        "author": "user_123",
-        "createdAt": "2024-05-20T14:30:00Z",
+        "preview": "최근 논란이 되고 있는 이슈에 대한 객관적인 데이터를 공유합니다...",
+        "author": "신뢰탐색자",
+        "createdAt": "2026-05-20T14:30:00Z",
         "views": 1245,
         "commentCount": 23
       }
     ],
     "pagination": { "currentPage": 1, "totalPages": 15, "totalItems": 145 }
+  }
+}
+```
+
+### `GET` /api/posts/{id}
+특정 게시글의 상세 내용과 작성된 댓글 목록을 조회합니다. 조회 시 게시글의 조회수(`views`)가 1 증가합니다.
+
+* **Parameters:**
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `id` | Number | Path | O | 조회할 게시글 ID |
+
+* **Notes:**
+  - 인증 토큰 없이도 조회할 수 있습니다.
+
+* **Response:**
+```json
+{
+  "status": 200,
+  "message": "Success",
+  "data": {
+    "id": 1001,
+    "category": "정보 공유 커뮤니티",
+    "title": "백신 부작용 사망자 급증? 관련 추가 자료 공유합니다.",
+    "content": "최근 논란이 되고 있는 이슈에 대한 객관적인 데이터를 공유합니다...",
+    "tags": ["백신", "부작용", "팩트체크"],
+    "views": 1246,
+    "commentCount": 2,
+    "createdAt": "2026-05-20T14:30:00Z",
+    "author": "신뢰탐색자",
+    "comments": [
+      {
+        "id": 1,
+        "content": "좋은 정보 감사합니다. 참고하겠습니다.",
+        "created_at": "2026-05-20T15:00:00Z",
+        "author": "검증러"
+      },
+      {
+        "id": 2,
+        "content": "추가 출처는 어디서 확인할 수 있나요?",
+        "created_at": "2026-05-20T15:10:00Z",
+        "author": "팩트인사이트"
+      }
+    ]
   }
 }
 ```
@@ -472,8 +517,12 @@ fetch('http://localhost:3002/api/analysis', {
   | :--- | :--- | :--- | :--- | :--- |
   | `title` | String | Body | O | 게시글 제목 |
   | `content` | String | Body | O | 게시글 본문 |
-  | `category` | String | Body | O | 카테고리 |
+  | `category` | String | Body | O | 허용 카테고리: `"정보 공유 커뮤니티"`, `"정정 요청"`, `"토론 게시판"` |
   | `tags` | Array | Body | X | 태그 목록 (예: `["백신", "건강"]`) |
+  | `Authorization` | String | Header | O | `Bearer {token}` 형식의 인증 토큰 |
+
+* **Notes:**
+  - 로그인한 사용자만 등록 가능하며, 지정된 카테고리만 허용됩니다.
 
 * **Response:**
 ```json
@@ -482,8 +531,96 @@ fetch('http://localhost:3002/api/analysis', {
   "message": "Post created successfully",
   "data": {
     "id": 1002,
-    "title": "새 게시글",
-    "category": "정보 공유"
+    "title": "새 게시글 제목",
+    "category": "정정 요청"
   }
 }
 ```
+
+### `PUT` /api/posts/{id}
+자신이 작성한 게시글의 정보(제목, 본문, 카테고리, 태그)를 수정합니다.
+
+* **Parameters:**
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `id` | Number | Path | O | 수정할 게시글 ID |
+  | `title` | String | Body | O | 게시글 제목 |
+  | `content` | String | Body | O | 게시글 본문 |
+  | `category` | String | Body | O | 허용 카테고리: `"정보 공유 커뮤니티"`, `"정정 요청"`, `"토론 게시판"` |
+  | `tags` | Array | Body | X | 태그 목록 (예: `["백신", "수정"]`) |
+  | `Authorization` | String | Header | O | `Bearer {token}` 형식의 인증 토큰 |
+
+* **Notes:**
+  - 게시글 작성자 본인만 수정할 수 있습니다.
+
+* **Response:**
+```json
+{
+  "status": 200,
+  "message": "게시글이 성공적으로 수정되었습니다."
+}
+```
+
+### `DELETE` /api/posts/{id}
+자신이 작성한 게시글을 삭제합니다.
+
+* **Parameters:**
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `id` | Number | Path | O | 삭제할 게시글 ID |
+  | `Authorization` | String | Header | O | `Bearer {token}` 형식의 인증 토큰 |
+
+* **Notes:**
+  - 게시글 작성자 본인만 삭제할 수 있습니다.
+
+* **Response:**
+```json
+{
+  "status": 200,
+  "message": "게시글이 성공적으로 삭제되었습니다."
+}
+```
+
+### `POST` /api/posts/{id}/comments
+특정 게시글에 새로운 댓글을 작성합니다.
+
+* **Parameters:**
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `id` | Number | Path | O | 댓글을 작성할 게시글 ID |
+  | `content` | String | Body | O | 댓글 내용 |
+  | `Authorization` | String | Header | O | `Bearer {token}` 형식의 인증 토큰 |
+
+* **Response:**
+```json
+{
+  "status": 201,
+  "message": "댓글이 작성되었습니다.",
+  "data": {
+    "id": 15,
+    "content": "좋은 정보 감사합니다. 참고하겠습니다.",
+    "created_at": "2026-08-04T14:00:00.000Z"
+  }
+}
+```
+
+### `DELETE` /api/posts/{id}/comments/{commentId}
+자신이 작성한 댓글을 삭제합니다.
+
+* **Parameters:**
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `id` | Number | Path | O | 해당 댓글이 작성된 게시글 ID |
+  | `commentId` | Number | Path | O | 삭제할 댓글 ID |
+  | `Authorization` | String | Header | O | `Bearer {token}` 형식의 인증 토큰 |
+
+* **Notes:**
+  - 댓글 작성자 본인만 삭제할 수 있습니다.
+
+* **Response:**
+```json
+{
+  "status": 200,
+  "message": "댓글이 삭제되었습니다."
+}
+```

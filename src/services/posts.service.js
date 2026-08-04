@@ -51,23 +51,24 @@ exports.createComment = async (postId, userId, content) => {
   return await PostsModel.createComment(postId, userId, content);
 };
 
-exports.deleteComment = async (commentId, userId) => {
-  return await PostsModel.deleteComment(commentId, userId);
+exports.deleteComment = async (commentId, postId, userId) => {
+  return await PostsModel.deleteComment(commentId, postId, userId);
 };
 
 exports.getPostDetail = async (postId) => {
-  await PostsModel.incrementViewCount(postId);
-
   const post = await PostsModel.getPostById(postId);
   
   if (!post) {
     return null;
   }
 
+  await PostsModel.incrementViewCount(postId);
+
   const comments = await PostsModel.getCommentsByPostId(postId);
 
   return {
     ...post,
+    views: post.views + 1,
     comments
   };
-};
+};
