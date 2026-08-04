@@ -24,7 +24,9 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.22.0"
+    "nodemailer": "^9.0.4",
+    "pg": "^8.22.0",
+    "resend": "^6.18.1"
   },
   "allowScripts": {
     "node-gyp-build@4.8.4": true

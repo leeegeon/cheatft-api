@@ -21,3 +21,9 @@ exports.findById = async (id) => {
   const { rows } = await db.query(query, [id]);
   return rows[0];
 };
+
+exports.updatePasswordByEmail = async (email, hashedPassword) => {
+  const query = 'UPDATE users SET password = $1 WHERE email = $2 RETURNING id, email';
+  const { rows } = await db.query(query, [hashedPassword, email]);
+  return rows[0];
+};

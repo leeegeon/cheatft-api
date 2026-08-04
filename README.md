@@ -157,6 +157,66 @@ fetch('http://localhost:3002/api/analysis', {
 }
 ```
 
+### `POST` /api/password/code
+사용자 이메일로 비밀번호 재설정용 6자리 인증번호를 발송합니다.
+
+* **Parameters:**
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `email` | String | Body | O | 가입된 사용자 이메일 |
+
+* **Notes:**
+  - 60초 이내 중복 재발송 요청 시 429 에러가 발생합니다.
+
+* **Response:**
+```json
+{
+  "status": 200,
+  "message": "인증번호가 이메일로 발송되었습니다."
+}
+```
+
+### `POST` /api/password/verify
+발송된 6자리 인증번호를 검증하고, 비밀번호 재설정용 1회용 토큰(`resetToken`)을 발급합니다.
+
+* **Parameters:**
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `email` | String | Body | O | 사용자 이메일 |
+  | `code` | String | Body | O | 6자리 인증번호 |
+
+* **Notes:**
+  - 인증번호 유효 시간은 5분입니다.
+  - 5회 이상 오입력 시 해당 인증번호는 무효화됩니다.
+
+* **Response:**
+```json
+{
+  "status": 200,
+  "message": "이메일 인증이 완료되었습니다.",
+  "data": {
+    "resetToken": "eyJhbGciOiJIUzI1NiIsIn..."
+  }
+}
+```
+
+### `POST` /api/password/reset
+발급받은 `resetToken`을 사용하여 새로운 비밀번호로 변경합니다.
+
+* **Parameters:**
+  | Name | Type | In | Required | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `resetToken` | String | Body | O | `/api/password/verify`에서 발급받은 재설정 토큰 |
+  | `newPassword` | String | Body | O | 변경할 신규 비밀번호 (최소 8자 이상) |
+
+* **Response:**
+```json
+{
+  "status": 200,
+  "message": "비밀번호가 성공적으로 변경되었습니다."
+}
+```
+
 ---
 
 ## 3. 검증하기 (Fact-Check)
