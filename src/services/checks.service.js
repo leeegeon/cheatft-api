@@ -60,6 +60,7 @@ const PRESS_MAPPING = {
   '421': '뉴스1',
   '422': '연합뉴스TV',
   '437': 'JTBC',
+  '445': 'MHN스포츠',
   '448': 'TV조선',
   '449': '채널A',
   '468': '스포츠서울',
@@ -123,11 +124,13 @@ const buildFallbackArticles = (content) => {
 
 exports.getArticleFromUrl = async (url) => {
   const trimmed = typeof url === 'string' ? url.trim() : '';
-  const isNaverNewsUrl = /^https:\/\/(n\.|m\.)?news\.naver\.com\/(article|mnews\/article)\/\d+\/\d+([?#].*)?$/.test(trimmed) ||
-                         /^https:\/\/news\.naver\.com\/main\/read\.naver.*$/.test(trimmed);
+  const isNaverNewsUrl = /^https:\/\/(n\.|m\.|www\.)?news\.naver\.com\/(article|mnews\/article)\/\d+\/\d+([?#].*)?$/.test(trimmed) ||
+                         /^https:\/\/(www\.)?news\.naver\.com\/main\/read\.naver.*$/.test(trimmed);
 
-  if (!isNaverNewsUrl) {
-    throw new Error('네이버 뉴스 링크만 지원합니다.');
+  const isNaverEntertainUrl = /^https:\/\/(m\.|www\.)?entertain\.naver\.com\/.*$/.test(trimmed);
+
+  if (!isNaverNewsUrl && !isNaverEntertainUrl) {
+    throw new Error('네이버 뉴스 및 네이버 연예 링크만 지원합니다.');
   }
 
   try {
@@ -146,6 +149,7 @@ exports.getArticleFromUrl = async (url) => {
 
     // 1. 기사 제목
     const title = $('#title_area span').text().trim() ||
+                  $('h2[class*="ArticleHead_article_title"]').text().trim() ||
                   $('h2.media_end_head_headline').text().trim() ||
                   $('#articleTitle').text().trim() ||
                   $('meta[property="og:title"]').attr('content')?.trim() || '';
@@ -163,11 +167,11 @@ exports.getArticleFromUrl = async (url) => {
     // 3. 입력 시간
     const inputTime = $('._ARTICLE_DATE_TIME').first().text().trim() ||
                       $('.media_end_head_info_datestamp_time').first().text().trim() ||
+                      $('[class*="DateInfo_info_item"] .date').first().text().trim() ||
                       $('meta[property="article:published_time"]').attr('content')?.trim() || '';
 
     // 4. 기사 주제
-    let topic = $('.media_end_categorize_item').text().trim() ||
-                $('.Nlist_item._LNB_ITEM.is_active .Nitem_link_menu').text().trim() || '';
+    let topic = isNaverEntertainUrl ? '연예' : ($('.media_end_categorize_item').text().trim() || $('.Nlist_item._LNB_ITEM.is_active .Nitem_link_menu').text().trim() || '');
 
     if (!topic) {
       const sectionMatch = html.match(/sectionId\s*:\s*["'](\d+)["']/);
@@ -176,13 +180,18 @@ exports.getArticleFromUrl = async (url) => {
       }
     }
 
+    if (isNaverEntertainUrl) {
+      topic = '연예';
+    }
+
     // 5. 기자 이름
     let reporter = $('.media_end_head_journalist_name').text().trim() ||
                    $('.byline').text().trim() ||
-                   $('.journal_author').text().trim() || '';
+                   $('.journal_author').text().trim() ||
+                   $('[class*="JournalistInfo_name"]').text().trim() || '';
 
     // 6. 기사 전문
-    const $content = $('#dic_area, #articleBodyContents, #articeBody').first().clone();
+    const $content = $('#comp_news_article, ._article_content, #dic_area, #articleBodyContents, #articeBody').first().clone();
     $content.find('script, style, .end_photo_org, iframe, .byline, .copyright').remove();
     $content.find('br').replaceWith('\n');
     $content.find('p, div, strong.media_end_summary').after('\n\n');
@@ -195,6 +204,7 @@ exports.getArticleFromUrl = async (url) => {
 
     if (!reporter) {
       const bylineMatch = contentText.match(/\[\s*[^=\]\s]+\s*=\s*([가-힣]{2,4})\s*(?:기자|특파원)?\s*\]/) ||
+                          contentText.match(/\(\s*[^=\)\s]+\s*=?\s*([가-힣]{2,4})\s*(?:기자|특파원)\s*\)/) ||
                           contentText.match(/([가-힣]{2,4})\s*기자/);
       if (bylineMatch) {
         reporter = bylineMatch[1];
@@ -215,7 +225,7 @@ exports.getArticleFromUrl = async (url) => {
       url: trimmed
     };
   } catch (error) {
-    if (error.message === '네이버 뉴스 링크만 지원합니다.') {
+    if (error.message === '네이버 뉴스 및 네이버 연예 링크만 지원합니다.') {
       throw error;
     }
     console.error('기사 스크래핑 실패:', error.message);
