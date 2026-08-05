@@ -149,12 +149,18 @@ exports.buildAnalysisPlan = async (keyword, articles) => {
     }
 
     return {
-      articles: rankedArticles.slice(0, 10).map((article) => ({
-        title: article.title,
-        press: article.press,
-        stance: article.stance || '중립',
-        reason: article.reason || ''
-      })),
+      articles: rankedArticles.slice(0, 10).map((article) => {
+        const matched = articles.find(
+          (ext) => ext.title === article.title || (ext.title && article.title && (ext.title.includes(article.title) || article.title.includes(ext.title)))
+        );
+        return {
+          title: article.title,
+          press: article.press || matched?.press || '기타 언론사',
+          stance: article.stance || '중립',
+          reason: article.reason || '',
+          url: article.url || matched?.url || null
+        };
+      }),
       insights: insights.slice(0, 5)
     };
   } catch (error) {
@@ -169,7 +175,8 @@ exports.createAnalysis = async (userId, keyword, period) => {
   const extractedArticles = (articleData?.articles || []).slice(0, 20).map((article) => ({
     title: article.title,
     description: article.description,
-    press: article.press
+    press: article.press,
+    url: article.url
   }));
 
   const plan = await exports.buildAnalysisPlan(keyword, extractedArticles);
@@ -203,7 +210,12 @@ exports.createAnalysis = async (userId, keyword, period) => {
   }
 
   for (const article of plan.articles) {
-    await AnalysisModel.addArticle(analysisId, article.press || 'AI', article.title, article.stance, article.url || null);
+    const matched = extractedArticles.find(
+      (ext) => ext.title === article.title || (ext.title && article.title && (ext.title.includes(article.title) || article.title.includes(ext.title)))
+    );
+    const targetUrl = article.url || matched?.url || null;
+
+    await AnalysisModel.addArticle(analysisId, article.press || matched?.press || '기타 언론사', article.title, article.stance, targetUrl);
   }
 
   for (const insight of plan.insights) {
