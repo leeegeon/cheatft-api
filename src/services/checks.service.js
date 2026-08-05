@@ -1,4 +1,5 @@
 // src/services/checks.service.js
+const cheerio = require('cheerio');
 const ChecksModel = require('../models/checks.model');
 
 const PRESS_MAPPING = {
@@ -73,6 +74,18 @@ const PRESS_MAPPING = {
   '666': '경기일보',
 };
 
+const SECTION_MAPPING = {
+  '100': '정치',
+  '101': '경제',
+  '102': '사회',
+  '103': '생활/문화',
+  '104': '세계',
+  '105': 'IT/과학',
+  '108': '연예',
+  '109': '스포츠',
+  '110': '오피니언',
+};
+
 const stripTags = (value = '') => value.replace(/<[^>]*>?/gm, '');
 
 const decodeHtmlEntities = (value = '') => String(value)
@@ -108,25 +121,106 @@ const buildFallbackArticles = (content) => {
   ];
 };
 
-const EXAMPLE_ARTICLE = {
-  title: '삼전닉스 레버리지 보완 첫날, 거래대금 75% ‘뚝’',
-  content: '[데일리안 = 서진주 기자] 단일종목 레버리지 상품의 기본예탁금 상향(1000만원→3000만원)이 처음 적용된 31일, 거래대금과 거래량이 큰 폭으로 감소했다.\n\n31일 한국거래소에 따르면 삼성전자와 SK하이닉스를 기초자산으로 하는 단일종목 레버리지·인버스 16종목의 거래대금은 약 3조원으로 집계됐다...',
-  press: '데일리안',
-  reporter: '서진주',
-  inputTime: '2026.07.31. 오후 6:28',
-  topic: '경제',
-  url: 'https://n.news.naver.com/article/119/0003117138?cds=news_media_pc&type=editn'
-};
-
 exports.getArticleFromUrl = async (url) => {
   const trimmed = typeof url === 'string' ? url.trim() : '';
-  const isNaverNewsUrl = /^https:\/\/n\.news\.naver\.com\/article\/\d+\/\d+([?#].*)?$/.test(trimmed);
+  const isNaverNewsUrl = /^https:\/\/(n\.|m\.)?news\.naver\.com\/(article|mnews\/article)\/\d+\/\d+([?#].*)?$/.test(trimmed) ||
+                         /^https:\/\/news\.naver\.com\/main\/read\.naver.*$/.test(trimmed);
 
   if (!isNaverNewsUrl) {
     throw new Error('네이버 뉴스 링크만 지원합니다.');
   }
 
-  return EXAMPLE_ARTICLE;
+  try {
+    const response = await fetch(trimmed, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`뉴스 페이지를 불러올 수 없습니다 (HTTP ${response.status})`);
+    }
+
+    const html = await response.text();
+    const $ = cheerio.load(html);
+
+    // 1. 기사 제목
+    const title = $('#title_area span').text().trim() ||
+                  $('h2.media_end_head_headline').text().trim() ||
+                  $('#articleTitle').text().trim() ||
+                  $('meta[property="og:title"]').attr('content')?.trim() || '';
+
+    // 2. 언론사
+    let press = $('.media_end_head_top_press').text().trim() ||
+                $('.ofhd_float_title_text_press').text().trim() ||
+                $('meta[property="og:article:author"]').attr('content')?.split('|')[0]?.trim() ||
+                $('meta[name="twitter:creator"]').attr('content')?.trim() || '';
+
+    if (!press) {
+      press = getPressFromLink(trimmed);
+    }
+
+    // 3. 입력 시간
+    const inputTime = $('._ARTICLE_DATE_TIME').first().text().trim() ||
+                      $('.media_end_head_info_datestamp_time').first().text().trim() ||
+                      $('meta[property="article:published_time"]').attr('content')?.trim() || '';
+
+    // 4. 기사 주제
+    let topic = $('.media_end_categorize_item').text().trim() ||
+                $('.Nlist_item._LNB_ITEM.is_active .Nitem_link_menu').text().trim() || '';
+
+    if (!topic) {
+      const sectionMatch = html.match(/sectionId\s*:\s*["'](\d+)["']/);
+      if (sectionMatch && sectionMatch[1]) {
+        topic = SECTION_MAPPING[sectionMatch[1]] || '';
+      }
+    }
+
+    // 5. 기자 이름
+    let reporter = $('.media_end_head_journalist_name').text().trim() ||
+                   $('.byline').text().trim() ||
+                   $('.journal_author').text().trim() || '';
+
+    // 6. 기사 전문
+    const $content = $('#dic_area, #articleBodyContents, #articeBody').first().clone();
+    $content.find('script, style, .end_photo_org, iframe, .byline, .copyright').remove();
+    $content.find('br').replaceWith('\n');
+    $content.find('p, div, strong.media_end_summary').after('\n\n');
+
+    let contentText = $content.text()
+      .split('\n')
+      .map(s => s.trim())
+      .filter(Boolean)
+      .join('\n\n');
+
+    if (!reporter) {
+      const bylineMatch = contentText.match(/\[\s*[^=\]\s]+\s*=\s*([가-힣]{2,4})\s*(?:기자|특파원)?\s*\]/) ||
+                          contentText.match(/([가-힣]{2,4})\s*기자/);
+      if (bylineMatch) {
+        reporter = bylineMatch[1];
+      }
+    }
+
+    if (reporter) {
+      reporter = reporter.replace(/\s*기자$/, '').replace(/\s*특파원$/, '').trim();
+    }
+
+    return {
+      title,
+      content: contentText,
+      press,
+      reporter,
+      inputTime,
+      topic,
+      url: trimmed
+    };
+  } catch (error) {
+    if (error.message === '네이버 뉴스 링크만 지원합니다.') {
+      throw error;
+    }
+    console.error('기사 스크래핑 실패:', error.message);
+    throw new Error(`기사 정보를 불러오는데 실패했습니다: ${error.message}`);
+  }
 };
 
 exports.processCheckRequest = async (userId, param2, param3) => {
