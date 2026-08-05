@@ -24,14 +24,14 @@ jobs:
         --exclude='.git' \
         --exclude='.env' \
         --exclude='node_modules' \
-        ./ /home/leegeon/cheatft/cheatft-api/ 
+        ./ /home/leegeon/cheatft/cheatft-api/
 
     - name: Install Dependencies
       run: |
-        cd /home/ubuntu/cheat-ft-backend
+        cd /home/leegeon/cheatft/cheatft-api/
         npm install
 
     - name: Restart PM2 Server
       run: |
-        cd /home/ubuntu/cheat-ft-backend
-        pm2 restart cheat-ft-backend --update-env || pm2 start src/index.js --name "cheat-ft-backend"
+        cd /home/leegeon/cheatft/cheatft-api/
+        pm2 restart cheat-ft-api --update-env || pm2 start src/index.js --name "cheat-ft-api"
