@@ -33,15 +33,17 @@ exports.countPosts = async (category, keyword) => {
 };
 
 exports.getCommunityStats = async () => {
-  const todayQuery = `SELECT COUNT(*) FROM posts WHERE created_at >= CURRENT_DATE`;
+  const todayPostsQuery = `SELECT COUNT(*) FROM posts WHERE created_at >= CURRENT_DATE`;
+  const todayCommentsQuery = `SELECT COUNT(*) FROM comments WHERE created_at >= CURRENT_DATE`;
   const usersQuery = `SELECT COUNT(*) FROM users`;
   
-  const { rows: todayPosts } = await db.query(todayQuery);
+  const { rows: todayPosts } = await db.query(todayPostsQuery);
+  const { rows: todayComments } = await db.query(todayCommentsQuery);
   const { rows: totalUsers } = await db.query(usersQuery);
 
   return {
     todayPosts: parseInt(todayPosts[0].count, 10),
-    todayComments: 0,
+    todayComments: parseInt(todayComments[0].count, 10),
     totalMembers: parseInt(totalUsers[0].count, 10)
   };
 };
