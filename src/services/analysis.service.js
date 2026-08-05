@@ -1,26 +1,6 @@
 const AnalysisModel = require('../models/analysis.model');
 const ChecksService = require('./checks.service');
 
-const DEFAULT_KEYWORDS = [
-  '백신 부작용',
-  '사망 인과성',
-  '질병관리청 발표',
-  '코로나 백신 안전성',
-  '이상 반응'
-];
-
-const createFallbackPlan = (keyword) => ({
-  articles: [
-    { title: `${keyword} 관련 핵심 기사`, press: 'AI', stance: '중립', reason: '기본 정렬' },
-    { title: `${keyword} 관련 반박 기사`, press: 'AI', stance: '반박', reason: '반박 관점 정리' },
-    { title: `${keyword} 관련 긍정 기사`, press: 'AI', stance: '긍정', reason: '긍정 관점 정리' }
-  ],
-  insights: [
-    `${keyword} 관련 기사들을 종합적으로 살펴보면 핵심 논점이 분명하게 드러납니다.`,
-    '반박 및 중립 관점의 기사도 함께 확인하는 것이 좋습니다.'
-  ]
-});
-
 const parseKeywordResponse = (content) => {
   if (!content) return [];
 
@@ -35,7 +15,7 @@ const parseKeywordResponse = (content) => {
   }
 
   return trimmed
-    .split(/\n|,/) 
+    .split(/\n|,/)
     .map(item => item.trim().replace(/^['"]|['"]$/g, ''))
     .filter(Boolean);
 };
